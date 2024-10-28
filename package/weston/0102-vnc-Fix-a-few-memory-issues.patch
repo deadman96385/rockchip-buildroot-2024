@@ -1,4 +1,4 @@
-From dc2eb47c1e8b2ccc21c71c72accc5f4f3e158c71 Mon Sep 17 00:00:00 2001
+From 66829d4e8c96335411b060c1bdb72eca9e176d8b Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 10 Jul 2024 16:45:54 +0800
 Subject: [PATCH 102/107] vnc: Fix a few memory issues
@@ -66,7 +66,7 @@ index 1c56e21..a341e66 100644
  
  	if (backend->debug)
 diff --git a/libweston/libinput-seat.c b/libweston/libinput-seat.c
-index eb8f756..60c55ec 100644
+index 4f33f9b..0736379 100644
 --- a/libweston/libinput-seat.c
 +++ b/libweston/libinput-seat.c
 @@ -50,6 +50,14 @@ udev_seat_create(struct udev_input *input, const char *seat_name);
@@ -143,15 +143,15 @@ index eb8f756..60c55ec 100644
  	}
  
  	return udev_seat_create(input, seat_name);
-@@ -542,6 +561,7 @@ weston_output_bind_input(struct weston_output *output, const char *match)
+@@ -541,6 +560,7 @@ void
+ weston_input_bind_output(struct weston_compositor *compositor, const char *output_name, const char *match)
  {
- 	struct weston_compositor *compositor = output->compositor;
  	struct evdev_device *device;
 +	struct weston_seat *seat_base;
  	struct udev_seat *seat;
  	const char *sysname, *name;
  	int len = strlen(match);
-@@ -551,7 +571,12 @@ weston_output_bind_input(struct weston_output *output, const char *match)
+@@ -550,7 +570,12 @@ weston_input_bind_output(struct weston_compositor *compositor, const char *outpu
  	if (len && match[len - 1] == '*')
  		len--;
  

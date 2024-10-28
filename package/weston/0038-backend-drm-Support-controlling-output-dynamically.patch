@@ -1,4 +1,4 @@
-From 10dd4584eb3415fd51f6db1b3b70258fb5bf738c Mon Sep 17 00:00:00 2001
+From dc49f244ef0ae2f87e658ea4860c5ad870fc6cf1 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 3 Jul 2020 12:37:37 +0800
 Subject: [PATCH 038/107] backend-drm: Support controlling output dynamically
@@ -38,16 +38,16 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  desktop-shell/shell.c                |  73 ++++++-
  include/libweston/libweston.h        |  21 ++
  libweston/backend-drm/drm-internal.h |  36 +++-
- libweston/backend-drm/drm.c          | 301 ++++++++++++++++++++++++++-
+ libweston/backend-drm/drm.c          | 303 ++++++++++++++++++++++++++-
  libweston/backend-drm/kms.c          |  12 +-
  libweston/backend-drm/modes.c        |  16 +-
  libweston/compositor.c               |  87 ++++++--
- libweston/libinput-seat.c            |  43 ++++
- libweston/libweston-internal.h       |   3 +
+ libweston/libinput-seat.c            |  45 ++++
+ libweston/libweston-internal.h       |   4 +
  libweston/pixman-renderer.c          |  29 +++
  libweston/renderer-gl/gl-renderer.c  |   3 +
  libweston/shell-utils/shell-utils.c  |  17 +-
- 13 files changed, 616 insertions(+), 43 deletions(-)
+ 13 files changed, 621 insertions(+), 43 deletions(-)
 
 diff --git a/compositor/main.c b/compositor/main.c
 index 319fc30..c62b1c4 100644
@@ -420,7 +420,7 @@ index c0ce4cd..4ac158b 100644
 +	return head->connector.conn->connection == DRM_MODE_CONNECTED;
 +}
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 8863eba..129fd8e 100644
+index 8863eba..1ba71c3 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -40,6 +40,7 @@
@@ -527,7 +527,7 @@ index 8863eba..129fd8e 100644
  }
  
  static const struct weston_drm_output_api api = {
-@@ -4385,6 +4404,268 @@ static const struct weston_drm_output_api api = {
+@@ -4385,6 +4404,270 @@ static const struct weston_drm_output_api api = {
  	drm_output_set_content_type,
  };
  
@@ -635,6 +635,11 @@ index 8863eba..129fd8e 100644
 +		} else if (!strcmp(config, "prefer")) {
 +			setenv("WESTON_OUTPUT_PREFERRED", name, 1);
 +			return;
++		} else if (!strncmp(config, "input=", strlen("input="))) {
++			weston_input_bind_output(b->compositor,
++						 name,
++						 config + strlen("input="));
++			return;
 +		}
 +	}
 +
@@ -728,9 +733,6 @@ index 8863eba..129fd8e 100644
 +			output->plane_bounds.x2 = x2;
 +			output->plane_bounds.y2 = y2;
 +			weston_output_schedule_repaint(base_output);
-+		} else if (!strncmp(config, "input=", strlen("input="))) {
-+			weston_output_bind_input(base_output,
-+						 config + strlen("input="));
 +		} else if (!strcmp(config, "refresh")) {
 +			output->state_invalid = true;
 +			weston_output_damage(base_output);
@@ -796,7 +798,7 @@ index 8863eba..129fd8e 100644
  enum drm_head_mode {
  	DRM_HEAD_MODE_DEFAULT,
  	DRM_HEAD_MODE_PRIMARY,
-@@ -4447,6 +4728,7 @@ drm_late_init(struct weston_backend *backend) {
+@@ -4447,6 +4730,7 @@ drm_late_init(struct weston_backend *backend) {
  	struct drm_backend *b = container_of(backend, struct drm_backend, base);
  
  	hotplug_timer_handler(b->drm);
@@ -804,7 +806,7 @@ index 8863eba..129fd8e 100644
  }
  
  static struct drm_backend *
-@@ -4749,6 +5031,9 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4749,6 +5033,9 @@ drm_backend_create(struct weston_compositor *compositor,
  	b->hotplug_timer =
  		wl_event_loop_add_timer(loop, hotplug_timer_handler, b->drm);
  
@@ -1063,18 +1065,17 @@ index 6a255b9..f7da591 100644
  	wl_list_init(&output->mode_list);
  
 diff --git a/libweston/libinput-seat.c b/libweston/libinput-seat.c
-index 4d3ab67..eb8f756 100644
+index 4d3ab67..4f33f9b 100644
 --- a/libweston/libinput-seat.c
 +++ b/libweston/libinput-seat.c
-@@ -536,3 +536,46 @@ udev_seat_get_named(struct udev_input *input, const char *seat_name)
+@@ -536,3 +536,48 @@ udev_seat_get_named(struct udev_input *input, const char *seat_name)
  
  	return udev_seat_create(input, seat_name);
  }
 +
 +void
-+weston_output_bind_input(struct weston_output *output, const char *match)
++weston_input_bind_output(struct weston_compositor *compositor, const char *output_name, const char *match)
 +{
-+	struct weston_compositor *compositor = output->compositor;
 +	struct evdev_device *device;
 +	struct udev_seat *seat;
 +	const char *sysname, *name;
@@ -1090,7 +1091,7 @@ index 4d3ab67..eb8f756 100644
 +			if (clear) {
 +				/* Clear all bounded inputs */
 +				if (!device->output_name ||
-+				    strcmp(device->output_name, output->name))
++				    strcmp(device->output_name, output_name))
 +					continue;
 +
 +				free(device->output_name);
@@ -1103,10 +1104,13 @@ index 4d3ab67..eb8f756 100644
 +
 +			if (!len || !strncmp(name, match, len) ||
 +			    !strncmp(sysname, match, len)) {
-+				if (device->output_name)
++				if (device->output_name) {
 +					free(device->output_name);
++					device->output_name = NULL;
++				}
 +
-+				device->output_name = strdup(output->name);
++				if (output_name)
++					device->output_name = strdup(output_name);
 +			}
 +		}
 +
@@ -1114,17 +1118,18 @@ index 4d3ab67..eb8f756 100644
 +	}
 +}
 diff --git a/libweston/libweston-internal.h b/libweston/libweston-internal.h
-index 0cb98dc..4b58287 100644
+index 0cb98dc..f0e4381 100644
 --- a/libweston/libweston-internal.h
 +++ b/libweston/libweston-internal.h
-@@ -256,6 +256,9 @@ void
- weston_output_set_single_mode(struct weston_output *output,
- 			      struct weston_mode *target);
+@@ -244,6 +244,10 @@ weston_compositor_xkb_destroy(struct weston_compositor *ec);
+ int
+ weston_input_init(struct weston_compositor *compositor);
  
 +void
-+weston_output_bind_input(struct weston_output *output, const char *name);
++weston_input_bind_output(struct weston_compositor *compositor,
++			 const char *output_name, const char *match);
 +
- /* weston_plane */
+ /* weston_output */
  
  void
 diff --git a/libweston/pixman-renderer.c b/libweston/pixman-renderer.c

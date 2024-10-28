@@ -1,4 +1,4 @@
-From 21544fcd41a9bbc482d24e2d816172f215fb9938 Mon Sep 17 00:00:00 2001
+From fff04167476681f31a2a9af71ae6642f19abaca8 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 23 Sep 2022 17:24:12 +0800
 Subject: [PATCH 073/107] HACK: Honour cursor-size config
@@ -60,10 +60,10 @@ index 73a3d69..2947fb0 100644
  		/*
  		 * If src_width != wl_fixed_from_int(-1),
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 5261bbf..9beb3d9 100644
+index a8e8d99..cb68e07 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
-@@ -5039,6 +5039,11 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -5041,6 +5041,11 @@ drm_backend_create(struct weston_compositor *compositor,
  		goto err_udev_dev;
  	}
  
@@ -155,10 +155,10 @@ index 9135d62..c462643 100644
  }
  
 diff --git a/libweston/libweston-internal.h b/libweston/libweston-internal.h
-index 4b58287..3465681 100644
+index f0e4381..aa716f2 100644
 --- a/libweston/libweston-internal.h
 +++ b/libweston/libweston-internal.h
-@@ -583,7 +583,7 @@ void
+@@ -584,7 +584,7 @@ void
  convert_size_by_transform_scale(int32_t *width_out, int32_t *height_out,
  				int32_t width, int32_t height,
  				uint32_t transform,
