@@ -1,4 +1,4 @@
-From dc49f244ef0ae2f87e658ea4860c5ad870fc6cf1 Mon Sep 17 00:00:00 2001
+From 9663a38d4a94b4fc28d22d669381bd2e03dc8cd8 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 3 Jul 2020 12:37:37 +0800
 Subject: [PATCH 038/107] backend-drm: Support controlling output dynamically
@@ -38,7 +38,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  desktop-shell/shell.c                |  73 ++++++-
  include/libweston/libweston.h        |  21 ++
  libweston/backend-drm/drm-internal.h |  36 +++-
- libweston/backend-drm/drm.c          | 303 ++++++++++++++++++++++++++-
+ libweston/backend-drm/drm.c          | 311 ++++++++++++++++++++++++++-
  libweston/backend-drm/kms.c          |  12 +-
  libweston/backend-drm/modes.c        |  16 +-
  libweston/compositor.c               |  87 ++++++--
@@ -47,7 +47,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  libweston/pixman-renderer.c          |  29 +++
  libweston/renderer-gl/gl-renderer.c  |   3 +
  libweston/shell-utils/shell-utils.c  |  17 +-
- 13 files changed, 621 insertions(+), 43 deletions(-)
+ 13 files changed, 629 insertions(+), 43 deletions(-)
 
 diff --git a/compositor/main.c b/compositor/main.c
 index 319fc30..c62b1c4 100644
@@ -420,7 +420,7 @@ index c0ce4cd..4ac158b 100644
 +	return head->connector.conn->connection == DRM_MODE_CONNECTED;
 +}
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 8863eba..1ba71c3 100644
+index 8863eba..f5d7e6d 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -40,6 +40,7 @@
@@ -527,7 +527,7 @@ index 8863eba..1ba71c3 100644
  }
  
  static const struct weston_drm_output_api api = {
-@@ -4385,6 +4404,270 @@ static const struct weston_drm_output_api api = {
+@@ -4385,6 +4404,278 @@ static const struct weston_drm_output_api api = {
  	drm_output_set_content_type,
  };
  
@@ -586,6 +586,7 @@ index 8863eba..1ba71c3 100644
 +drm_output_set_size(struct drm_output *output, const int w, const int h)
 +{
 +	struct drm_backend *b = to_drm_backend(output->base.compositor);
++	struct drm_device *device = output->device;
 +	struct weston_mode *mode;
 +
 +	if (output->base.fixed_size &&
@@ -615,6 +616,13 @@ index 8863eba..1ba71c3 100644
 +	}
 +
 +	drm_output_print_modes(output);
++
++	if (device->atomic_modeset)
++		weston_output_update_capture_info(&output->base,
++						  WESTON_OUTPUT_CAPTURE_SOURCE_WRITEBACK,
++						  output->base.current_mode->width,
++						  output->base.current_mode->height,
++						  pixel_format_get_info(output->format->format));
 +}
 +
 +static void
@@ -798,7 +806,7 @@ index 8863eba..1ba71c3 100644
  enum drm_head_mode {
  	DRM_HEAD_MODE_DEFAULT,
  	DRM_HEAD_MODE_PRIMARY,
-@@ -4447,6 +4730,7 @@ drm_late_init(struct weston_backend *backend) {
+@@ -4447,6 +4738,7 @@ drm_late_init(struct weston_backend *backend) {
  	struct drm_backend *b = container_of(backend, struct drm_backend, base);
  
  	hotplug_timer_handler(b->drm);
@@ -806,7 +814,7 @@ index 8863eba..1ba71c3 100644
  }
  
  static struct drm_backend *
-@@ -4749,6 +5033,9 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4749,6 +5041,9 @@ drm_backend_create(struct weston_compositor *compositor,
  	b->hotplug_timer =
  		wl_event_loop_add_timer(loop, hotplug_timer_handler, b->drm);
  

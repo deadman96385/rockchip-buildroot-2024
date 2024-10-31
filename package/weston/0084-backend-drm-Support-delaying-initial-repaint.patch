@@ -1,4 +1,4 @@
-From f1fb4ff936c2f091e70140ed20ce7497eeac97cf Mon Sep 17 00:00:00 2001
+From 98ceeb7b3420adf0244839126e5b5444db0ff420 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Thu, 19 Oct 2023 11:41:06 +0800
 Subject: [PATCH 084/107] backend-drm: Support delaying initial repaint
@@ -26,7 +26,7 @@ index d459594..cde46de 100644
  	bool single_head;
  	bool head_fallback;
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index de39752..67c9e1e 100644
+index 98994ed..982ec3e 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -1049,12 +1049,16 @@ drm_output_repaint(struct weston_output *output_base)
@@ -76,7 +76,7 @@ index de39752..67c9e1e 100644
  	resources = drmModeGetResources(device->drm.fd);
  	if (!resources) {
  		weston_log("drmModeGetResources failed\n");
-@@ -4999,6 +5019,10 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -5007,6 +5027,10 @@ drm_backend_create(struct weston_compositor *compositor,
  		weston_log("Entering mirror mode.\n");
  	}
  
