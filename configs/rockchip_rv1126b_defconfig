@@ -1,4 +1,4 @@
-#include "base/tiny.config"
+#include "base/base.config"
 #include "wifibt/bt.config"
 #include "wifibt/wireless.config"
 #include "chips/rk3576_aarch64.config"
