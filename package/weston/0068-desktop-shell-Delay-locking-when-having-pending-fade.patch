@@ -1,4 +1,4 @@
-From 7eddc9427c4f0f2809c0369393b1a71654f86123 Mon Sep 17 00:00:00 2001
+From df5202882dc12941ec7d8e8e406e6266c59cc97e Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 1 Jun 2022 11:28:24 +0800
 Subject: [PATCH 068/107] desktop-shell: Delay locking when having pending
@@ -11,7 +11,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  2 files changed, 14 insertions(+), 1 deletion(-)
 
 diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
-index 386c47c..8893d7c 100644
+index 9132d03..2bbfc2d 100644
 --- a/desktop-shell/shell.c
 +++ b/desktop-shell/shell.c
 @@ -3902,6 +3902,10 @@ static void
@@ -45,7 +45,7 @@ index 386c47c..8893d7c 100644
  		shell->fade.animation =
  			weston_fade_run(shell->fade.curtain->view,
  					1.0 - tint, tint, 300.0,
-@@ -4912,6 +4920,9 @@ shell_destroy(struct wl_listener *listener, void *data)
+@@ -4913,6 +4921,9 @@ shell_destroy(struct wl_listener *listener, void *data)
  	if (shell->fade.animation) {
  		weston_view_animation_destroy(shell->fade.animation);
  		shell->fade.animation = NULL;

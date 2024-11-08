@@ -1,4 +1,4 @@
-From 9663a38d4a94b4fc28d22d669381bd2e03dc8cd8 Mon Sep 17 00:00:00 2001
+From 567a6936ed39588b490232c13debbe62219f293b Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 3 Jul 2020 12:37:37 +0800
 Subject: [PATCH 038/107] backend-drm: Support controlling output dynamically
@@ -35,7 +35,7 @@ echo "output:HDMI-A-1:refresh" >> /tmp/.weston_drm.conf
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
  compositor/main.c                    |  18 ++
- desktop-shell/shell.c                |  73 ++++++-
+ desktop-shell/shell.c                |  70 +++++-
  include/libweston/libweston.h        |  21 ++
  libweston/backend-drm/drm-internal.h |  36 +++-
  libweston/backend-drm/drm.c          | 311 ++++++++++++++++++++++++++-
@@ -47,7 +47,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  libweston/pixman-renderer.c          |  29 +++
  libweston/renderer-gl/gl-renderer.c  |   3 +
  libweston/shell-utils/shell-utils.c  |  17 +-
- 13 files changed, 629 insertions(+), 43 deletions(-)
+ 13 files changed, 626 insertions(+), 43 deletions(-)
 
 diff --git a/compositor/main.c b/compositor/main.c
 index 319fc30..c62b1c4 100644
@@ -86,7 +86,7 @@ index 319fc30..c62b1c4 100644
  		weston_log_ctx_add_log_scope(log_ctx, "proto",
  					     "Wayland protocol dump for all clients.\n",
 diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
-index 570d332..7683bbd 100644
+index 66d69f3..94dc0e5 100644
 --- a/desktop-shell/shell.c
 +++ b/desktop-shell/shell.c
 @@ -48,6 +48,9 @@
@@ -228,13 +228,10 @@ index 570d332..7683bbd 100644
  		first_output = container_of(ec->output_list.next,
  					    struct weston_output, link);
  
-@@ -4643,6 +4682,15 @@ handle_output_resized(struct wl_listener *listener, void *data)
- 	struct weston_output *output = (struct weston_output *)data;
- 	struct shell_output *sh_output = find_shell_output_from_weston_output(shell, output);
+@@ -4647,6 +4686,12 @@ handle_output_resized(struct wl_listener *listener, void *data)
+ 	if (!sh_output)
+ 		return;
  
-+	if (!sh_output)
-+		return;
-+
 +	if (shell->lock_surface) {
 +		struct weston_coord_surface offset =
 +			 weston_coord_surface(0, 0, shell->lock_surface);
@@ -244,7 +241,7 @@ index 570d332..7683bbd 100644
  	handle_output_resized_shsurfs(shell);
  
  	shell_resize_surface_to_output(shell, sh_output->background_surface, output);
-@@ -4696,7 +4744,9 @@ handle_output_move_layer(struct desktop_shell *shell,
+@@ -4700,7 +4745,9 @@ handle_output_move_layer(struct desktop_shell *shell,
  		pos = weston_coord_global_add(
  		      weston_view_get_pos_offset_global(view),
  		      output->move);
@@ -255,7 +252,7 @@ index 570d332..7683bbd 100644
  	}
  }
  
-@@ -4724,6 +4774,9 @@ handle_output_move(struct wl_listener *listener, void *data)
+@@ -4728,6 +4775,9 @@ handle_output_move(struct wl_listener *listener, void *data)
  		handle_output_move_layer(shell, &shell->background_layer, data);
  		handle_output_move_layer(shell, &shell->panel_layer, data);
  	}
@@ -420,7 +417,7 @@ index c0ce4cd..4ac158b 100644
 +	return head->connector.conn->connection == DRM_MODE_CONNECTED;
 +}
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 8863eba..f5d7e6d 100644
+index c281dcc..6deabc8 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -40,6 +40,7 @@
@@ -516,9 +513,9 @@ index 8863eba..f5d7e6d 100644
  	wl_event_source_remove(b->hotplug_timer);
  	wl_event_source_remove(b->udev_drm_source);
  	wl_event_source_remove(b->drm_source);
-@@ -4375,6 +4390,10 @@ output_create_notify(struct wl_listener *listener, void *data)
- 					     output_create_listener);
+@@ -4376,6 +4391,10 @@ output_create_notify(struct wl_listener *listener, void *data)
  
+ 	/* NOTE: It might trigger output resized signal too early */
  	drm_backend_update_outputs(b);
 +
 +	/* Force reload config */
@@ -527,7 +524,7 @@ index 8863eba..f5d7e6d 100644
  }
  
  static const struct weston_drm_output_api api = {
-@@ -4385,6 +4404,278 @@ static const struct weston_drm_output_api api = {
+@@ -4386,6 +4405,278 @@ static const struct weston_drm_output_api api = {
  	drm_output_set_content_type,
  };
  
@@ -806,7 +803,7 @@ index 8863eba..f5d7e6d 100644
  enum drm_head_mode {
  	DRM_HEAD_MODE_DEFAULT,
  	DRM_HEAD_MODE_PRIMARY,
-@@ -4447,6 +4738,7 @@ drm_late_init(struct weston_backend *backend) {
+@@ -4448,6 +4739,7 @@ drm_late_init(struct weston_backend *backend) {
  	struct drm_backend *b = container_of(backend, struct drm_backend, base);
  
  	hotplug_timer_handler(b->drm);
@@ -814,7 +811,7 @@ index 8863eba..f5d7e6d 100644
  }
  
  static struct drm_backend *
-@@ -4749,6 +5041,9 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4750,6 +5042,9 @@ drm_backend_create(struct weston_compositor *compositor,
  	b->hotplug_timer =
  		wl_event_loop_add_timer(loop, hotplug_timer_handler, b->drm);
  

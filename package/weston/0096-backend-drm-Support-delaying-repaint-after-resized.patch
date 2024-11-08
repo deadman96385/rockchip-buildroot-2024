@@ -1,4 +1,4 @@
-From e747c85c9f8d52abf54ef6aa596f9f5b893e51fc Mon Sep 17 00:00:00 2001
+From 2642bce066d668ac71239053553838bbf3c80010 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 17 Apr 2024 15:41:33 +0800
 Subject: [PATCH 096/107] backend-drm: Support delaying repaint after resized
@@ -43,7 +43,7 @@ index e74a23b..8c33347 100644
  	int virtual_width;
  	int virtual_height;
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 9b5253a..f7c6d9b 100644
+index 4106cf4..dd39625 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -214,6 +214,7 @@ static void
@@ -82,7 +82,7 @@ index 9b5253a..f7c6d9b 100644
  		return 1;
  	}
  
-@@ -4556,6 +4563,17 @@ output_create_notify(struct wl_listener *listener, void *data)
+@@ -4557,6 +4564,17 @@ output_create_notify(struct wl_listener *listener, void *data)
  	config_timer_handler(b);
  }
  
@@ -100,7 +100,7 @@ index 9b5253a..f7c6d9b 100644
  static const struct weston_drm_output_api api = {
  	drm_output_set_mode,
  	drm_output_set_gbm_format,
-@@ -5091,6 +5109,12 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -5092,6 +5110,12 @@ drm_backend_create(struct weston_compositor *compositor,
  	if (buf)
  		sscanf(buf, "%dx%d", &b->virtual_width, &b->virtual_height);
  
@@ -113,7 +113,7 @@ index 9b5253a..f7c6d9b 100644
  	buf = getenv("WESTON_DRM_MIRROR");
  	if (buf && buf[0] == '1') {
  		b->mirror_mode = true;
-@@ -5278,6 +5302,10 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -5279,6 +5303,10 @@ drm_backend_create(struct weston_compositor *compositor,
  	wl_signal_add(&b->compositor->output_created_signal,
  		      &b->output_create_listener);
  

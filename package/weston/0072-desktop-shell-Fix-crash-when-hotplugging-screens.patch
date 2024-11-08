@@ -1,4 +1,4 @@
-From fc9125728a07669485d12ad90ff300ae7325f118 Mon Sep 17 00:00:00 2001
+From 8035943b7e9974a40f2b7f8cf79f9b7131c5da66 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Mon, 3 Oct 2022 21:03:04 +0800
 Subject: [PATCH 072/107] desktop-shell: Fix crash when hotplugging screens
@@ -26,7 +26,7 @@ index 9b5d3b2..c4f9c27 100644
  		struct weston_view *view = get_default_view(shell->text_input.surface);
  		if (view == NULL)
 diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
-index 82ff9f0..f327669 100644
+index 70af672..9153aac 100644
 --- a/desktop-shell/shell.c
 +++ b/desktop-shell/shell.c
 @@ -2216,6 +2216,7 @@ desktop_surface_removed(struct weston_desktop_surface *desktop_surface,
@@ -71,7 +71,7 @@ index 82ff9f0..f327669 100644
  	wl_list_remove(&shell_output->destroy_listener.link);
  	wl_list_remove(&shell_output->link);
  	free(shell_output);
-@@ -4853,7 +4861,7 @@ setup_output_destroy_handler(struct weston_compositor *ec,
+@@ -4854,7 +4862,7 @@ setup_output_destroy_handler(struct weston_compositor *ec,
  static void
  desktop_shell_destroy_layer(struct weston_layer *layer)
  {
@@ -80,7 +80,7 @@ index 82ff9f0..f327669 100644
  	bool removed;
  
  	do {
-@@ -4878,9 +4886,11 @@ desktop_shell_destroy_layer(struct weston_layer *layer)
+@@ -4879,9 +4887,11 @@ desktop_shell_destroy_layer(struct weston_layer *layer)
  		 * we restart the loop as long as we keep removing views from
  		 * the list.
  		 */
@@ -94,7 +94,7 @@ index 82ff9f0..f327669 100644
  				desktop_shell_destroy_surface(shsurf);
  				removed = true;
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 8c661cf..1c6d6f2 100644
+index 20d493a..49925f2 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -2796,10 +2796,17 @@ drm_output_destroy(struct weston_output *base)
@@ -116,7 +116,7 @@ index 8c661cf..1c6d6f2 100644
  		if (!base->compositor->shutting_down) {
  			/* We are not shutting down, so we can wait for flip
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index 888b5cd..f3f0bb3 100644
+index 9525d55..565d64b 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
 @@ -7459,6 +7459,7 @@ static void

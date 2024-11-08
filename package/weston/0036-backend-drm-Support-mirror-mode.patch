@@ -1,4 +1,4 @@
-From 6092faf17fb7454ddee18ae1b2a7817eb07aaa66 Mon Sep 17 00:00:00 2001
+From 436cf768cd48b943f60acd39cca7b2a6fb64fea4 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Thu, 19 Nov 2020 09:41:47 +0800
 Subject: [PATCH 036/107] backend-drm: Support mirror mode
@@ -43,7 +43,7 @@ index f500979..aea02d4 100644
  }
  
 diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
-index 3d38f35..570d332 100644
+index 5b463ac..66d69f3 100644
 --- a/desktop-shell/shell.c
 +++ b/desktop-shell/shell.c
 @@ -268,7 +268,7 @@ set_shsurf_size_maximized_or_fullscreen(struct shell_surface *shsurf,
@@ -141,7 +141,7 @@ index c3cda6e..c0ce4cd 100644
  
  void
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 8bd1662..d1062b9 100644
+index c2704af..cb42137 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -70,6 +70,11 @@
@@ -559,7 +559,7 @@ index 8bd1662..d1062b9 100644
  	free(output);
  }
  
-@@ -4210,6 +4517,12 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4211,6 +4518,12 @@ drm_backend_create(struct weston_compositor *compositor,
  	if (buf)
  		sscanf(buf, "%dx%d", &b->virtual_width, &b->virtual_height);
  

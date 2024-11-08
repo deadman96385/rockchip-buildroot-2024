@@ -1,4 +1,4 @@
-From c4694a643cc138317c9883477768627088197b64 Mon Sep 17 00:00:00 2001
+From c0942167c42cc2b238d7e8aebc16106258eddba3 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Tue, 23 Jun 2020 10:05:48 +0800
 Subject: [PATCH 034/107] backend-drm: Support selecting monitors
@@ -28,15 +28,16 @@ WESTON_DRM_HEAD_MODE:
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
  compositor/main.c                    |  22 +-
- desktop-shell/shell.c                |  79 ++++--
+ desktop-shell/shell.c                |  83 ++++--
  include/libweston/config-parser.h    |   1 +
  include/libweston/libweston.h        |   7 +
+ kiosk-shell/kiosk-shell.c            |   4 +
  libweston/backend-drm/drm-internal.h |  21 ++
- libweston/backend-drm/drm.c          | 360 +++++++++++++++++++++++----
+ libweston/backend-drm/drm.c          | 361 +++++++++++++++++++++++----
  libweston/backend-drm/kms.c          |  22 +-
  libweston/backend.h                  |   2 +
  libweston/compositor.c               |  83 +++++-
- 9 files changed, 511 insertions(+), 86 deletions(-)
+ 10 files changed, 520 insertions(+), 86 deletions(-)
 
 diff --git a/compositor/main.c b/compositor/main.c
 index 04908e1..319fc30 100644
@@ -96,7 +97,7 @@ index 04908e1..319fc30 100644
  		enabled = weston_head_is_enabled(head);
  		changed = weston_head_is_device_changed(head);
 diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
-index 41afef5..3d38f35 100644
+index 41afef5..5b463ac 100644
 --- a/desktop-shell/shell.c
 +++ b/desktop-shell/shell.c
 @@ -104,6 +104,7 @@ struct shell_surface {
@@ -265,7 +266,18 @@ index 41afef5..3d38f35 100644
  
  			if (is_maximized || is_fullscreen) {
  				set_shsurf_size_maximized_or_fullscreen(shsurf,
-@@ -4685,12 +4700,27 @@ handle_output_move_layer(struct desktop_shell *shell,
+@@ -4625,6 +4640,10 @@ handle_output_resized(struct wl_listener *listener, void *data)
+ 	struct weston_output *output = (struct weston_output *)data;
+ 	struct shell_output *sh_output = find_shell_output_from_weston_output(shell, output);
+ 
++	/* HACK: The resized signal might be eariler than the created signal */
++	if (!sh_output)
++		return;
++
+ 	handle_output_resized_shsurfs(shell);
+ 
+ 	shell_resize_surface_to_output(shell, sh_output->background_surface, output);
+@@ -4685,12 +4704,27 @@ handle_output_move_layer(struct desktop_shell *shell,
  static void
  handle_output_move(struct wl_listener *listener, void *data)
  {
@@ -294,7 +306,7 @@ index 41afef5..3d38f35 100644
  }
  
  static void
-@@ -4783,8 +4813,11 @@ shell_destroy(struct wl_listener *listener, void *data)
+@@ -4783,8 +4817,11 @@ shell_destroy(struct wl_listener *listener, void *data)
  		shell->fade.animation = NULL;
  	}
  
@@ -308,7 +320,7 @@ index 41afef5..3d38f35 100644
  
  	if (shell->fade.startup_timer)
  		wl_event_source_remove(shell->fade.startup_timer);
-@@ -4997,5 +5030,7 @@ wet_shell_init(struct weston_compositor *ec,
+@@ -4997,5 +5034,7 @@ wet_shell_init(struct weston_compositor *ec,
  
  	clock_gettime(CLOCK_MONOTONIC, &shell->startup_time);
  
@@ -360,6 +372,21 @@ index 5418c5b..153366b 100644
  	enum weston_output_flow output_flow;
  };
  
+diff --git a/kiosk-shell/kiosk-shell.c b/kiosk-shell/kiosk-shell.c
+index 2880532..28018b5 100644
+--- a/kiosk-shell/kiosk-shell.c
++++ b/kiosk-shell/kiosk-shell.c
+@@ -1254,6 +1254,10 @@ kiosk_shell_handle_output_resized(struct wl_listener *listener, void *data)
+ 		kiosk_shell_find_shell_output(shell, output);
+ 	struct weston_view *view;
+ 
++	/* HACK: The resized signal might be eariler than the created signal */
++	if (!shoutput)
++		return;
++
+ 	kiosk_shell_output_recreate_background(shoutput);
+ 
+ 	wl_list_for_each(view, &shell->normal_layer.view_list.link,
 diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
 index f85cb22..4c93273 100644
 --- a/libweston/backend-drm/drm-internal.h
@@ -421,7 +448,7 @@ index f85cb22..4c93273 100644
  
  void
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index b3fa788..2d3686f 100644
+index b3fa788..68ec59f 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -48,6 +48,7 @@
@@ -780,7 +807,7 @@ index b3fa788..2d3686f 100644
  		weston_log("Failed to create heads for %s\n", device->drm.filename);
  		goto err;
  	}
-@@ -3894,6 +4048,15 @@ next:
+@@ -3894,6 +4048,16 @@ next:
  	free(tokenize);
  }
  
@@ -790,13 +817,14 @@ index b3fa788..2d3686f 100644
 +	struct drm_backend *b = container_of(listener, struct drm_backend,
 +					     output_create_listener);
 +
++	/* NOTE: It might trigger output resized signal too early */
 +	drm_backend_update_outputs(b);
 +}
 +
  static const struct weston_drm_output_api api = {
  	drm_output_set_mode,
  	drm_output_set_gbm_format,
-@@ -3902,6 +4065,70 @@ static const struct weston_drm_output_api api = {
+@@ -3902,6 +4066,70 @@ static const struct weston_drm_output_api api = {
  	drm_output_set_content_type,
  };
  
@@ -867,7 +895,7 @@ index b3fa788..2d3686f 100644
  static struct drm_backend *
  drm_backend_create(struct weston_compositor *compositor,
  		   struct weston_drm_backend_config *config)
-@@ -3913,7 +4140,9 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -3913,7 +4141,9 @@ drm_backend_create(struct weston_compositor *compositor,
  	const char *seat_id = default_seat;
  	const char *session_seat;
  	struct weston_drm_format_array *scanout_formats;
@@ -877,7 +905,7 @@ index b3fa788..2d3686f 100644
  	int ret;
  
  	session_seat = getenv("XDG_SEAT");
-@@ -3929,6 +4158,42 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -3929,6 +4159,42 @@ drm_backend_create(struct weston_compositor *compositor,
  	if (b == NULL)
  		return NULL;
  
@@ -920,7 +948,7 @@ index b3fa788..2d3686f 100644
  	device = zalloc(sizeof *device);
  	if (device == NULL)
  		goto err_backend;
-@@ -4018,6 +4283,7 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4018,6 +4284,7 @@ drm_backend_create(struct weston_compositor *compositor,
  		goto err_udev_dev;
  	}
  
@@ -928,7 +956,7 @@ index b3fa788..2d3686f 100644
  	b->base.shutdown = drm_shutdown;
  	b->base.destroy = drm_destroy;
  	b->base.repaint_begin = drm_repaint_begin;
-@@ -4052,10 +4318,6 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4052,10 +4319,6 @@ drm_backend_create(struct weston_compositor *compositor,
  	}
  
  	wl_list_init(&b->drm->writeback_connector_list);
@@ -939,7 +967,7 @@ index b3fa788..2d3686f 100644
  
  	drmModeFreeResources(res);
  
-@@ -4091,6 +4353,10 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4091,6 +4354,10 @@ drm_backend_create(struct weston_compositor *compositor,
  
  	udev_device_unref(drm_device);
  
@@ -950,7 +978,7 @@ index b3fa788..2d3686f 100644
  	weston_compositor_add_debug_binding(compositor, KEY_O,
  					    planes_binding, b);
  	weston_compositor_add_debug_binding(compositor, KEY_C,
-@@ -4150,6 +4416,9 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4150,6 +4417,9 @@ drm_backend_create(struct weston_compositor *compositor,
  		goto err_udev_monitor;
  	}
  
@@ -960,7 +988,7 @@ index b3fa788..2d3686f 100644
  	return b;
  
  err_udev_monitor:
-@@ -4157,7 +4426,6 @@ err_udev_monitor:
+@@ -4157,7 +4427,6 @@ err_udev_monitor:
  	udev_monitor_unref(b->udev_monitor);
  err_drm_source:
  	wl_event_source_remove(b->drm_source);

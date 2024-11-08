@@ -1,4 +1,4 @@
-From 7a86482f48ba4ddc91270c896b9518721aa25b27 Mon Sep 17 00:00:00 2001
+From 293d60a9d70863a3581475b12428003c734b413e Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Thu, 1 Feb 2024 11:31:08 +0800
 Subject: [PATCH 047/107] backend-drm: Support changing touch calibration
@@ -37,10 +37,10 @@ index 717060f..8be9c98 100644
  	struct weston_touch *aggregate;	/**< weston_touch this is part of */
  	struct wl_list link;		/**< in weston_touch::device_list */
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index ea07228..04485a7 100644
+index d6f04a7..7232dec 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
-@@ -4676,6 +4676,58 @@ config_handle_compositor(struct drm_backend *b, const char *key,
+@@ -4677,6 +4677,58 @@ config_handle_compositor(struct drm_backend *b, const char *key,
  	}
  }
  
@@ -99,7 +99,7 @@ index ea07228..04485a7 100644
  static int
  config_timer_handler(void *data)
  {
-@@ -4729,6 +4781,8 @@ config_timer_handler(void *data)
+@@ -4730,6 +4782,8 @@ config_timer_handler(void *data)
  			config_handle_output(b, key, value);
  		else if (!strcmp(type, "compositor"))
  			config_handle_compositor(b, key, value);
