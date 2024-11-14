@@ -5,5 +5,4 @@ menuconfig BR2_PACKAGE_LVGL
 if BR2_PACKAGE_LVGL
 source "package/lvgl/lvgl/Config.in"
 source "package/lvgl/lv_drivers/Config.in"
-source "package/lvgl/lvgl_demo/Config.in"
 endif
