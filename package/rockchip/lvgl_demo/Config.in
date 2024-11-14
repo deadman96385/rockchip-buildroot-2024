@@ -8,15 +8,18 @@ if BR2_PACKAGE_LVGL_DEMO
 	config BR2_LVGL_DEMO_BACKEND_SDL
 		bool
 		default y if BR2_LV_DRIVERS_USE_SDL_GPU
+		default y if BR2_LV_USE_SDL && BR2_PACKAGE_LVGL_VERSION_9
 
 	config BR2_LVGL_DEMO_BACKEND_DRM
 		bool
 		default y if BR2_LV_DRIVERS_USE_DRM
+		default y if BR2_LV_USE_LINUX_DRM && BR2_PACKAGE_LVGL_VERSION_9
 		select BR2_PACKAGE_LIBEVDEV
 
 	config BR2_LVGL_DEMO_BACKEND_RKADK
 		bool
 		default y if BR2_LV_DRIVERS_USE_RKADK
+		default y if BR2_LV_USE_RKADK && BR2_PACKAGE_LVGL_VERSION_9
 		select BR2_PACKAGE_LIBEVDEV
 
 	config BR2_LVGL_DEMO_OFFICIAL_DEMOS
@@ -34,23 +37,11 @@ if BR2_PACKAGE_LVGL_DEMO
 			help
 			  Enbale lvgl demo widgets
 
-		config BR2_LVGL_DEMO_KEYPAD_AND_ENCODER
-			bool "lvgl demo keypad and encoder"
-			select BR2_LV_USE_DEMO_KEYPAD_AND_ENCODER
-			help
-			  Enbale lvgl demo keypad and encoder
-
 		config BR2_LVGL_DEMO_BENCHMARK
 			bool "lvgl demo benchmark"
 			select BR2_LV_USE_DEMO_BENCHMARK
 			help
 			  Enbale lvgl demo benchmark
-
-		config BR2_LVGL_DEMO_STRESS
-			bool "lvgl demo stress"
-			select BR2_LV_USE_DEMO_STRESS
-			help
-			  Enbale lvgl demo stress
 
 		config BR2_LVGL_DEMO_MUSIC
 			bool "lvgl demo music"
