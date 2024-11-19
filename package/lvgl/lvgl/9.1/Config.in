@@ -1568,6 +1568,11 @@ menu "LVGL configuration"
 			bool "Use Linux DRM device"
 			default n
 
+		config BR2_LV_DRM_USE_RGA
+			depends on BR2_LV_USE_LINUX_DRM
+			bool "Use RGA in DRM drivers"
+			default n
+
 		config BR2_LV_USE_TFT_ESPI
 			bool "Use TFT_eSPI driver"
 			default n
