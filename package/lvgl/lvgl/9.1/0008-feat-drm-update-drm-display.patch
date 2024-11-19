@@ -1,19 +1,19 @@
-From e48f5f49e361b5050ecafd00b82161a7fbd5ae1a Mon Sep 17 00:00:00 2001
+From c7867932b6a6531143580f9eb8cb7d3d58bc52af Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Wed, 23 Oct 2024 14:56:33 +0800
-Subject: [PATCH 08/12] feat(drm): update drm display
+Subject: [PATCH] feat(drm): update drm display
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
- src/drivers/display/drm/lv_linux_drm.c | 1497 ++++++++++++++----------
+ src/drivers/display/drm/lv_linux_drm.c | 1498 ++++++++++++++----------
  src/drivers/display/drm/lv_linux_drm.h |   23 +-
- 2 files changed, 891 insertions(+), 629 deletions(-)
+ 2 files changed, 892 insertions(+), 629 deletions(-)
 
 diff --git a/src/drivers/display/drm/lv_linux_drm.c b/src/drivers/display/drm/lv_linux_drm.c
-index faa2212..f213e50 100644
+index faa2212..3f8c598 100644
 --- a/src/drivers/display/drm/lv_linux_drm.c
 +++ b/src/drivers/display/drm/lv_linux_drm.c
-@@ -7,829 +7,1084 @@
+@@ -7,829 +7,1085 @@
   *      INCLUDES
   *********************/
  #include "lv_linux_drm.h"
@@ -1273,7 +1273,8 @@ index faa2212..f213e50 100644
 +        memset(crtc_bo->ptr, 0x0, crtc_bo->size);
 +        ret = drmModeSetCrtc(dev->fd, dev->crtc_id, crtc_bo->fb_id, 0, 0,
 +                             dev->con_ids, dev->num_cons, &dev->mode_info);
-+        LV_LOG_WARN("drmModeSetCrtc failed");
++        if (ret)
++            LV_LOG_WARN("drmModeSetCrtc failed");
 +        free_drm_bo(dev, crtc_bo);
      }
 +    success = 1;
