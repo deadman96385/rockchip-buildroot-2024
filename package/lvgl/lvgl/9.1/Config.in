@@ -786,18 +786,23 @@ menu "LVGL configuration"
 	endmenu
 
 	menu "Text Settings"
-		choice BR2_LV_TXT_ENC
+		choice BR2_LV_TXT_ENC_TYPE
 			prompt "Select a character encoding for strings"
 			help
 				Select a character encoding for strings. Your IDE or editor should have the same character encoding.
-			default BR2_LV_TXT_ENC_UTF8 if !BR2_LV_CONF_MINIMAL
-			default BR2_LV_TXT_ENC_ASCII if BR2_LV_CONF_MINIMAL
+			default BR2_LV_TXT_ENC_TYPE_UTF8 if !BR2_LV_CONF_MINIMAL
+			default BR2_LV_TXT_ENC_TYPE_ASCII if BR2_LV_CONF_MINIMAL
 
-			config BR2_LV_TXT_ENC_UTF8
+			config BR2_LV_TXT_ENC_TYPE_UTF8
 				bool "UTF8"
-			config BR2_LV_TXT_ENC_ASCII
+			config BR2_LV_TXT_ENC_TYPE_ASCII
 				bool "ASCII"
 		endchoice
+
+		config BR2_LV_TXT_ENC
+			int
+			default 1 if BR2_LV_TXT_ENC_TYPE_UTF8
+			default 2 if BR2_LV_TXT_ENC_TYPE_ASCII
 
 		config BR2_LV_TXT_BREAK_CHARS
 			string "Can break (wrap) texts on these chars"
