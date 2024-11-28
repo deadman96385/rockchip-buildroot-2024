@@ -1,7 +1,7 @@
-From 63211f819d917582a61c40241bc28ca49bd3fbef Mon Sep 17 00:00:00 2001
+From 34d78d2d951e4149d9b158e0787384ac1716303d Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 3 Jul 2020 12:37:37 +0800
-Subject: [PATCH 33/95] backend-drm: Support controlling compositor dynamically
+Subject: [PATCH 33/97] backend-drm: Support controlling compositor dynamically
 
 Use config file to control compositor's state.
 
@@ -26,12 +26,13 @@ echo "compositor:output:unpin" > /tmp/.weston_drm.conf
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
- libweston/backend-drm/drm.c | 93 ++++++++++++++++++++++++++++++-------
+ libweston/backend-drm/drm.c | 91 ++++++++++++++++++++++++++++++-------
  libweston/compositor.c      |  7 ++-
- 2 files changed, 82 insertions(+), 18 deletions(-)
+ libweston/libinput-seat.c   |  6 +++
+ 3 files changed, 86 insertions(+), 18 deletions(-)
 
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index e755240..09c5080 100644
+index e75524051..d1f341f2b 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -213,32 +213,28 @@ close_src:
@@ -79,7 +80,7 @@ index e755240..09c5080 100644
  	}
  
  	if (!primary)
-@@ -4705,6 +4701,65 @@ config_handle_output(struct drm_backend *b, const char *name,
+@@ -4705,6 +4701,63 @@ config_handle_output(struct drm_backend *b, const char *name,
  	}
  }
  
@@ -110,9 +111,7 @@ index e755240..09c5080 100644
 +
 +			weston_compositor_wake(b->compositor);
 +			weston_compositor_damage_all(b->compositor);
-+
-+			if (b->input.suspended)
-+				udev_input_enable(&b->input);
++			udev_input_enable(&b->input);
 +		}
 +	} else if (!strcmp(key, "hotplug")) {
 +		if (!strcmp(value, "off"))
@@ -145,7 +144,7 @@ index e755240..09c5080 100644
  static int
  config_timer_handler(void *data)
  {
-@@ -4746,7 +4801,9 @@ config_timer_handler(void *data)
+@@ -4746,7 +4799,9 @@ config_timer_handler(void *data)
  
  	/**
  	 * Parse configs, formated with <type>:<key>:<value>
@@ -156,7 +155,7 @@ index e755240..09c5080 100644
  	 */
  	while (3 == fscanf(conf_fp,
  			   "%" STR(MAX_CONF_LEN) "[^:]:"
-@@ -4754,6 +4811,8 @@ config_timer_handler(void *data)
+@@ -4754,6 +4809,8 @@ config_timer_handler(void *data)
  			   "%" STR(MAX_CONF_LEN) "[^\n]%*c", type, key, value)) {
  		if (!strcmp(type, "output"))
  			config_handle_output(b, key, value);
@@ -166,7 +165,7 @@ index e755240..09c5080 100644
  
  	fclose(conf_fp);
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index 047b6a1..7870f9a 100644
+index 047b6a11e..7870f9a5a 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
 @@ -6202,6 +6202,10 @@ weston_compositor_wake(struct weston_compositor *compositor)
@@ -193,6 +192,23 @@ index 047b6a1..7870f9a 100644
  		/* fall through */
  	default:
  		wl_event_source_timer_update(compositor->idle_source,
+diff --git a/libweston/libinput-seat.c b/libweston/libinput-seat.c
+index 4f33f9bb8..87c3a27e3 100644
+--- a/libweston/libinput-seat.c
++++ b/libweston/libinput-seat.c
+@@ -319,6 +319,12 @@ udev_input_enable(struct udev_input *input)
+ 	struct udev_seat *seat;
+ 	int devices_found = 0;
+ 
++	/* Already enabled */
++	if (input->libinput_source && !input->suspended)
++		return 0;
++
++	fprintf(stderr, "(%s)%s[%d]\n", __FILE__, __func__, __LINE__);
++
+ 	loop = wl_display_get_event_loop(c->wl_display);
+ 	fd = libinput_get_fd(input->libinput);
+ 	input->libinput_source =
 -- 
 2.20.1
 

@@ -1,7 +1,7 @@
-From 66c29f04a190bb62f784a3d4df95838510494907 Mon Sep 17 00:00:00 2001
+From dcc4dff7a7880029e8006b55c60c53255ba2dcdf Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 6 Jan 2021 04:11:48 +0800
-Subject: [PATCH 39/95] backend-drm: Support modifier
+Subject: [PATCH 39/97] backend-drm: Support modifier
 
 Tested on rk3588 with:
 unset WESTON_DISABLE_ATOMIC
@@ -20,7 +20,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  5 files changed, 97 insertions(+), 26 deletions(-)
 
 diff --git a/libweston/backend-drm/drm-gbm.c b/libweston/backend-drm/drm-gbm.c
-index 70924cf..055ef0b 100644
+index 70924cf3e..055ef0baf 100644
 --- a/libweston/backend-drm/drm-gbm.c
 +++ b/libweston/backend-drm/drm-gbm.c
 @@ -184,6 +184,7 @@ create_gbm_surface(struct gbm_device *gbm, struct drm_output *output)
@@ -54,7 +54,7 @@ index 70924cf..055ef0b 100644
  			gbm_surface_create_with_modifiers(gbm,
  							  mode->width, mode->height,
 diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
-index 477f411..c966bd3 100644
+index 477f411c5..c966bd3f6 100644
 --- a/libweston/backend-drm/drm-internal.h
 +++ b/libweston/backend-drm/drm-internal.h
 @@ -463,6 +463,7 @@ struct drm_plane {
@@ -66,7 +66,7 @@ index 477f411..c966bd3 100644
  
  struct drm_connector {
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index dbf2e01..f092159 100644
+index b3bf6b8d2..d0b6615fe 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -1608,6 +1608,42 @@ err:
@@ -143,7 +143,7 @@ index dbf2e01..f092159 100644
  	return NULL;
  }
  
-@@ -5040,11 +5088,6 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -5038,11 +5086,6 @@ drm_backend_create(struct weston_compositor *compositor,
  
  	wl_list_insert(&compositor->backend_list, &b->base.link);
  
@@ -155,7 +155,7 @@ index dbf2e01..f092159 100644
  	/* Check if we run drm-backend using a compatible launcher */
  	compositor->launcher = weston_launcher_connect(compositor, seat_id, true);
  	if (compositor->launcher == NULL) {
-@@ -5077,6 +5120,33 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -5075,6 +5118,33 @@ drm_backend_create(struct weston_compositor *compositor,
  		goto err_udev_dev;
  	}
  
@@ -189,7 +189,7 @@ index dbf2e01..f092159 100644
  	if (config->additional_devices)
  		open_additional_devices(b, config->additional_devices);
  
-@@ -5092,18 +5162,18 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -5090,18 +5160,18 @@ drm_backend_create(struct weston_compositor *compositor,
  	case WESTON_RENDERER_PIXMAN:
  		if (init_pixman(b) < 0) {
  			weston_log("failed to initialize pixman renderer\n");
@@ -211,7 +211,7 @@ index dbf2e01..f092159 100644
  	}
  
  	b->base.late_init = drm_late_init;
-@@ -5118,21 +5188,6 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -5116,21 +5186,6 @@ drm_backend_create(struct weston_compositor *compositor,
  
  	weston_setup_vt_switch_bindings(compositor);
  
@@ -234,7 +234,7 @@ index dbf2e01..f092159 100644
  			    compositor, b->udev, seat_id,
  			    config->configure_device) < 0) {
 diff --git a/libweston/backend-drm/kms.c b/libweston/backend-drm/kms.c
-index 2dbe0ee..bcb9a38 100644
+index 2dbe0ee0b..bcb9a38d0 100644
 --- a/libweston/backend-drm/kms.c
 +++ b/libweston/backend-drm/kms.c
 @@ -38,6 +38,7 @@
@@ -264,7 +264,7 @@ index 2dbe0ee..bcb9a38 100644
  		if (ret == 0)
  			device->fb_modifiers = cap;
 diff --git a/libweston/pixel-formats.c b/libweston/pixel-formats.c
-index b350638..0fe329b 100644
+index b35063827..0fe329be9 100644
 --- a/libweston/pixel-formats.c
 +++ b/libweston/pixel-formats.c
 @@ -272,6 +272,7 @@ static const struct pixel_format_info pixel_format_table[] = {
