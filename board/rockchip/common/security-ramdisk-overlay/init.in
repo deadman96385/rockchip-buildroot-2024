@@ -149,6 +149,12 @@ else
 fi
 # exec /sbin/init "$@"
 
+mount --move /dev/ /mnt/dev
+while [ -z "$(mount | grep /mnt/dev)" ]
+do
+	sleep 0.1
+done
+
 unset SECURITY_STORAGE
 # echo "exec busybox switch_root /mnt ${INIT}"
 # exec busybox switch_root /mnt ${INIT}
