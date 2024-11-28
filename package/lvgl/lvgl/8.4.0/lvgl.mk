@@ -4,7 +4,7 @@
 #
 ################################################################################
 
-LVGL_VERSION = 8.3.0
+LVGL_VERSION = 8.4.0
 LVGL_SITE = $(call github,lvgl,lvgl,v$(LVGL_VERSION))
 LVGL_INSTALL_STAGING = YES
 

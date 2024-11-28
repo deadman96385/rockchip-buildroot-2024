@@ -20,7 +20,7 @@ menuconfig BR2_PACKAGE_LVGL
 
 if BR2_PACKAGE_LVGL
 	if BR2_PACKAGE_LVGL_VERSION_8
-		source "package/lvgl/lvgl/8.3.0/Config.in"
+		source "package/lvgl/lvgl/8.4.0/Config.in"
 		source "package/lvgl/lv_drivers/Config.in"
 	endif
 

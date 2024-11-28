@@ -1,7 +1,7 @@
-From 5f96742194626b63ecba374e8274b599f0bb4f1b Mon Sep 17 00:00:00 2001
+From 6d643a59c74b388f560ed052681187fca3052c79 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Fri, 29 Mar 2024 11:47:27 +0800
-Subject: [PATCH 18/18] fix(snapshot): always use sw driver to taking sanpshot
+Subject: [PATCH 31/35] fix(snapshot): always use sw driver to taking sanpshot
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
  1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/src/extra/others/snapshot/lv_snapshot.c b/src/extra/others/snapshot/lv_snapshot.c
-index 1b2275115..eb0170b31 100644
+index c668d0178..a5e8ab004 100644
 --- a/src/extra/others/snapshot/lv_snapshot.c
 +++ b/src/extra/others/snapshot/lv_snapshot.c
 @@ -10,6 +10,7 @@

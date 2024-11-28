@@ -1,7 +1,7 @@
-From bce76e1158062964b58b34b5404fdaabcd9265e1 Mon Sep 17 00:00:00 2001
+From 7140993f9c67fdf9a5927eeb01178c8e110008c2 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Wed, 6 Sep 2023 15:56:30 +0800
-Subject: [PATCH 14/18] src: extra: New widgets stiker_matrix
+Subject: [PATCH 27/35] src: extra: New widgets stiker_matrix
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
@@ -14,10 +14,10 @@ Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
  create mode 100644 src/extra/widgets/stiker_matrix/lv_stiker_matrix.h
 
 diff --git a/src/extra/themes/default/lv_theme_default.c b/src/extra/themes/default/lv_theme_default.c
-index 85c6ac376..3b47961d1 100644
+index bd85b9b06..ab7a09d6e 100644
 --- a/src/extra/themes/default/lv_theme_default.c
 +++ b/src/extra/themes/default/lv_theme_default.c
-@@ -751,6 +751,14 @@ static void theme_apply(lv_theme_t * th, lv_obj_t * obj)
+@@ -746,6 +746,14 @@ static void theme_apply(lv_theme_t * th, lv_obj_t * obj)
          lv_obj_add_style(obj, &styles->scrollbar, LV_PART_SCROLLBAR);
          lv_obj_add_style(obj, &styles->scrollbar_scrolled, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
      }

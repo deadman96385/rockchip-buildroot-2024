@@ -1,7 +1,7 @@
-From 39946c7b64bd09da59bfb05e87bb69f45eb305c2 Mon Sep 17 00:00:00 2001
+From 1253b14d668f0352e30c77ba187256f1322ea914 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Tue, 13 Aug 2024 11:06:12 +0800
-Subject: [PATCH] fix{indev}: Fix indev would still trigger feedback when
+Subject: [PATCH 32/35] fix{indev}: Fix indev would still trigger feedback when
  disabled
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
@@ -10,7 +10,7 @@ Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
  1 file changed, 3 insertions(+), 2 deletions(-)
 
 diff --git a/src/core/lv_indev.c b/src/core/lv_indev.c
-index ab1265ec8..d31151c46 100644
+index d753e4427..a5e61ef4e 100644
 --- a/src/core/lv_indev.c
 +++ b/src/core/lv_indev.c
 @@ -70,13 +70,13 @@ void lv_indev_read_timer_cb(lv_timer_t * timer)

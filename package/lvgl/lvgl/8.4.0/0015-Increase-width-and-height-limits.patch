@@ -1,7 +1,7 @@
-From b611a79fcc4211aca3d2f27f5d44bd2ba4f0036b Mon Sep 17 00:00:00 2001
+From 78a327a384d19b1ac9512349a1de30897450f7ea Mon Sep 17 00:00:00 2001
 From: Jinkun Hong <jinkun.hong@rock-chips.com>
 Date: Mon, 6 Jun 2022 09:46:02 +0800
-Subject: [PATCH 02/19] Increase width and height limits
+Subject: [PATCH 15/35] Increase width and height limits
 
 Signed-off-by: Jinkun Hong <jinkun.hong@rock-chips.com>
 ---
@@ -9,10 +9,10 @@ Signed-off-by: Jinkun Hong <jinkun.hong@rock-chips.com>
  1 file changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/src/draw/lv_img_buf.h b/src/draw/lv_img_buf.h
-index 1be7bb652..98b7eff04 100644
+index a315a85ae..04e8361c2 100644
 --- a/src/draw/lv_img_buf.h
 +++ b/src/draw/lv_img_buf.h
-@@ -114,8 +114,8 @@ typedef uint8_t lv_img_cf_t;
+@@ -113,8 +113,8 @@ typedef uint8_t lv_img_cf_t;
  #if LV_BIG_ENDIAN_SYSTEM
  typedef struct {
  
@@ -23,7 +23,7 @@ index 1be7bb652..98b7eff04 100644
      uint32_t reserved : 2; /*Reserved to be used later*/
      uint32_t always_zero : 3; /*It the upper bits of the first byte. Always zero to look like a
                                   non-printable character*/
-@@ -131,8 +131,8 @@ typedef struct {
+@@ -130,8 +130,8 @@ typedef struct {
  
      uint32_t reserved : 2; /*Reserved to be used later*/
  
