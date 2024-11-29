@@ -1,4 +1,4 @@
-From f7596b47313ccaffc423ca20cde0a6fc450cb526 Mon Sep 17 00:00:00 2001
+From 465e7277aa3ba33bc81ba69dc5389aad45479e2b Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 10 Jul 2024 16:45:54 +0800
 Subject: [PATCH 90/97] libinput-seat: Avoid using VNC's seat as udev_seat.
@@ -9,7 +9,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  1 file changed, 34 insertions(+), 9 deletions(-)
 
 diff --git a/libweston/libinput-seat.c b/libweston/libinput-seat.c
-index 87c3a27e3..da7a73672 100644
+index aaefe6cfc..c160a65a8 100644
 --- a/libweston/libinput-seat.c
 +++ b/libweston/libinput-seat.c
 @@ -50,6 +50,14 @@ udev_seat_create(struct udev_input *input, const char *seat_name);
@@ -35,7 +35,7 @@ index 87c3a27e3..da7a73672 100644
  	struct udev_seat *seat;
  	int devices_found = 0;
  
-@@ -344,7 +353,12 @@ udev_input_enable(struct udev_input *input)
+@@ -342,7 +351,12 @@ udev_input_enable(struct udev_input *input)
  		process_events(input);
  	}
  
@@ -49,7 +49,7 @@ index 87c3a27e3..da7a73672 100644
  		evdev_notify_keyboard_focus(&seat->base, &seat->devices_list);
  
  		if (!wl_list_empty(&seat->devices_list))
-@@ -427,12 +441,14 @@ udev_input_init(struct udev_input *input, struct weston_compositor *c,
+@@ -425,12 +439,14 @@ udev_input_init(struct udev_input *input, struct weston_compositor *c,
  void
  udev_input_destroy(struct udev_input *input)
  {
@@ -67,7 +67,7 @@ index 87c3a27e3..da7a73672 100644
  	libinput_unref(input->libinput);
  }
  
-@@ -533,11 +549,14 @@ udev_seat_destroy(struct udev_seat *seat)
+@@ -531,11 +547,14 @@ udev_seat_destroy(struct udev_seat *seat)
  struct udev_seat *
  udev_seat_get_named(struct udev_input *input, const char *seat_name)
  {
@@ -86,7 +86,7 @@ index 87c3a27e3..da7a73672 100644
  	}
  
  	return udev_seat_create(input, seat_name);
-@@ -547,6 +566,7 @@ void
+@@ -545,6 +564,7 @@ void
  weston_input_bind_output(struct weston_compositor *compositor, const char *output_name, const char *match)
  {
  	struct evdev_device *device;
@@ -94,7 +94,7 @@ index 87c3a27e3..da7a73672 100644
  	struct udev_seat *seat;
  	const char *sysname, *name;
  	int len = strlen(match);
-@@ -556,7 +576,12 @@ weston_input_bind_output(struct weston_compositor *compositor, const char *outpu
+@@ -554,7 +574,12 @@ weston_input_bind_output(struct weston_compositor *compositor, const char *outpu
  	if (len && match[len - 1] == '*')
  		len--;
  

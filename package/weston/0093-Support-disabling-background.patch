@@ -1,7 +1,7 @@
-From 9960283fafbced5a858bac6b514cd58801e75833 Mon Sep 17 00:00:00 2001
+From 4a343f5ebb76077992ca937501265a5f7770c58b Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Thu, 8 Aug 2024 08:51:02 +0800
-Subject: [PATCH 93/95] Support disabling background
+Subject: [PATCH 93/97] Support disabling background
 
 Set env WESTON_NO_BACKGROUND=1 to disable it.
 
@@ -12,7 +12,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  2 files changed, 12 insertions(+), 1 deletion(-)
 
 diff --git a/clients/desktop-shell.c b/clients/desktop-shell.c
-index b8ded46..888ab13 100644
+index b8ded46dd..888ab13ed 100644
 --- a/clients/desktop-shell.c
 +++ b/clients/desktop-shell.c
 @@ -145,6 +145,8 @@ struct output {
@@ -47,10 +47,10 @@ index b8ded46..888ab13 100644
  	surface = window_get_wl_surface(output->background->window);
  	weston_desktop_shell_set_background(desktop->shell,
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index 0e39ca3..e9c499e 100644
+index 1382df4b0..10e556610 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
-@@ -3893,7 +3893,8 @@ weston_output_repaint(struct weston_output *output, struct timespec *now)
+@@ -3897,7 +3897,8 @@ weston_output_repaint(struct weston_output *output, struct timespec *now)
  		assert(pnode->output == output);
  	}
  

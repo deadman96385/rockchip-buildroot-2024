@@ -1,7 +1,7 @@
-From 64e1fc34eef04c5b7def8936fa0d9bb589fe993e Mon Sep 17 00:00:00 2001
+From aea3411d0edb5a7293827d6f319d119e6d301898 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 3 Nov 2021 17:52:51 +0800
-Subject: [PATCH 49/95] compositor: Support placing subsurface above or below
+Subject: [PATCH 49/97] compositor: Support placing subsurface above or below
  all siblings
 
 By passing itself as sibling in ::place_above or ::place_below.
@@ -12,10 +12,10 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  1 file changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index 7c51650..2638024 100644
+index 86f9a4ef9..1b22f8f85 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
-@@ -5848,7 +5848,12 @@ subsurface_place_above(struct wl_client *client,
+@@ -5852,7 +5852,12 @@ subsurface_place_above(struct wl_client *client,
  	if (!sub)
  		return;
  
@@ -29,7 +29,7 @@ index 7c51650..2638024 100644
  	if (!sibling)
  		return;
  
-@@ -5873,7 +5878,12 @@ subsurface_place_below(struct wl_client *client,
+@@ -5877,7 +5882,12 @@ subsurface_place_below(struct wl_client *client,
  	if (!sub)
  		return;
  

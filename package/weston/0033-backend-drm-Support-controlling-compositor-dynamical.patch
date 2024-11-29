@@ -1,4 +1,4 @@
-From 34d78d2d951e4149d9b158e0787384ac1716303d Mon Sep 17 00:00:00 2001
+From bdfe1a667783a90032eb55f4a622782a01853a83 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 3 Jul 2020 12:37:37 +0800
 Subject: [PATCH 33/97] backend-drm: Support controlling compositor dynamically
@@ -28,8 +28,8 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
  libweston/backend-drm/drm.c | 91 ++++++++++++++++++++++++++++++-------
  libweston/compositor.c      |  7 ++-
- libweston/libinput-seat.c   |  6 +++
- 3 files changed, 86 insertions(+), 18 deletions(-)
+ libweston/libinput-seat.c   |  4 ++
+ 3 files changed, 84 insertions(+), 18 deletions(-)
 
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
 index e75524051..d1f341f2b 100644
@@ -165,10 +165,10 @@ index e75524051..d1f341f2b 100644
  
  	fclose(conf_fp);
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index 047b6a11e..7870f9a5a 100644
+index af1915738..cf4e2b7a1 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
-@@ -6202,6 +6202,10 @@ weston_compositor_wake(struct weston_compositor *compositor)
+@@ -6206,6 +6206,10 @@ weston_compositor_wake(struct weston_compositor *compositor)
  {
  	uint32_t old_state = compositor->state;
  
@@ -179,7 +179,7 @@ index 047b6a11e..7870f9a5a 100644
  	/* The state needs to be changed before emitting the wake
  	 * signal because that may try to schedule a repaint which
  	 * will not work if the compositor is still sleeping */
-@@ -6209,10 +6213,11 @@ weston_compositor_wake(struct weston_compositor *compositor)
+@@ -6213,10 +6217,11 @@ weston_compositor_wake(struct weston_compositor *compositor)
  
  	switch (old_state) {
  	case WESTON_COMPOSITOR_SLEEPING:
@@ -193,18 +193,16 @@ index 047b6a11e..7870f9a5a 100644
  	default:
  		wl_event_source_timer_update(compositor->idle_source,
 diff --git a/libweston/libinput-seat.c b/libweston/libinput-seat.c
-index 4f33f9bb8..87c3a27e3 100644
+index 4f33f9bb8..aaefe6cfc 100644
 --- a/libweston/libinput-seat.c
 +++ b/libweston/libinput-seat.c
-@@ -319,6 +319,12 @@ udev_input_enable(struct udev_input *input)
+@@ -319,6 +319,10 @@ udev_input_enable(struct udev_input *input)
  	struct udev_seat *seat;
  	int devices_found = 0;
  
 +	/* Already enabled */
 +	if (input->libinput_source && !input->suspended)
 +		return 0;
-+
-+	fprintf(stderr, "(%s)%s[%d]\n", __FILE__, __func__, __LINE__);
 +
  	loop = wl_display_get_event_loop(c->wl_display);
  	fd = libinput_get_fd(input->libinput);
