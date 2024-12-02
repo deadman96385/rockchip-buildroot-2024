@@ -89,7 +89,7 @@ index 4af300b..8696086 100644
  
      lv_env_get_u32("lv_disp_witdh", &lcd_w, 0);
      lv_env_get_u32("lv_disp_height", &lcd_h, 0);
-+    lv_env_get_u32("lv_disp_fps", &lcd_fps, 0);
++    lv_env_get_u32("lv_disp_fps", &lcd_fps, 60);
  
      if(lcd_w == 0 || lcd_h == 0)
          getdrmresolve(&lcd_w, &lcd_h);
