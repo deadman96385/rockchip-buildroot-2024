@@ -36,21 +36,8 @@ LVGL_CONF_OPTS += -DLV_USE_DRAW_SDL=y
 endif
 
 define LVGL_PRE_HOOK
-	echo "#ifndef LV_CONF_H" > $(LVGL_DIR)/lv_conf.h
-	echo "#define LV_CONF_H" >> $(LVGL_DIR)/lv_conf.h
-	cat $(BR2_CONFIG) | grep "LVGL\|LV_" | grep -v "#" | grep -v "LV_LOG_LEVEL_" | \
-		grep -v "LV_OS_" | grep -v "LV_DRAW_SW_ASM_" | grep -v "LV_STDLIB_" | \
-		grep -v "LV_TXT_ENC_" | sed -e "s/BR2_//g" | \
-		sed -e "s/LV_FONT_DEFAULT_/CONFIG_LV_FONT_DEFAULT_/g" | \
-		sed -e "s/=y/ 1/g" | sed -e "s/=/ /g" | sed -e "s/^/#define /" >> \
-		$(LVGL_DIR)/lv_conf.h
-	cat $(BR2_CONFIG) | grep "LVGL\|LV_" | grep "is not set" | grep -v "LV_LOG_LEVEL_" | \
-		grep -v "LV_OS_" | grep -v "LV_DRAW_SW_ASM_" | grep -v "LV_STDLIB_" | \
-		grep -v "LV_STDLIB_" | grep -v "LV_FONT_DEFAULT_" | \
-		grep -v "LV_TXT_ENC_" | \
-		sed -e "s/# BR2_/#define /g" | sed -e "s/ is not set/ 0/g" >> \
-		$(LVGL_DIR)/lv_conf.h
-	echo "#endif" >> $(LVGL_DIR)/lv_conf.h
+	cat $(BR2_CONFIG) | grep "LVGL\|LV_" | grep -v "#" > $(LVGL_DIR)/lv_conf.mk
+	$(SED) "s/^/set\(/;s/=y/=1/;s/=/ /;s/$$/)/;s/\"/\"\\\\\"/;s/\")/\\\\\"\")/" $(LVGL_DIR)/lv_conf.mk
 endef
 LVGL_PRE_CONFIGURE_HOOKS += LVGL_PRE_HOOK
 
