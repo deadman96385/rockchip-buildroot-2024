@@ -1,7 +1,7 @@
-From 40f01b9b69cf0974a02b73e6901cb3f863e0cac9 Mon Sep 17 00:00:00 2001
+From c407d1125d0710055bf6cdb0fc359724b73e4b4a Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 27 Apr 2022 18:05:28 +0800
-Subject: [PATCH 20/95] Support setting output flow direction
+Subject: [PATCH 20/98] Support setting output flow direction
 
 Set env "WESTON_OUTPUT_FLOW" to change output flow direction:
 horizontal:
@@ -13,15 +13,15 @@ same-as:
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
- clients/desktop-shell.c       | 20 ++++++++++++++++
- desktop-shell/shell.c         | 14 +++++++++++-
- frontend/main.c               | 11 +++++++++
- include/libweston/libweston.h | 11 +++++++++
- libweston/compositor.c        | 43 ++++++++++++++++-------------------
- 5 files changed, 74 insertions(+), 25 deletions(-)
+ clients/desktop-shell.c       | 20 ++++++++++++++
+ desktop-shell/shell.c         | 14 +++++++++-
+ frontend/main.c               | 11 ++++++++
+ include/libweston/libweston.h | 11 ++++++++
+ libweston/compositor.c        | 50 ++++++++++++++++++-----------------
+ 5 files changed, 81 insertions(+), 25 deletions(-)
 
 diff --git a/clients/desktop-shell.c b/clients/desktop-shell.c
-index 9e7863f..f500979 100644
+index 9e7863f54..f50097976 100644
 --- a/clients/desktop-shell.c
 +++ b/clients/desktop-shell.c
 @@ -136,6 +136,8 @@ struct output {
@@ -70,7 +70,7 @@ index 9e7863f..f500979 100644
  		display_bind(desktop->display, id, &wl_output_interface, 2);
  	output->server_output_id = id;
 diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
-index a1238f0..38ddb4a 100644
+index a1238f07d..38ddb4aa6 100644
 --- a/desktop-shell/shell.c
 +++ b/desktop-shell/shell.c
 @@ -1060,7 +1060,7 @@ constrain_position(struct weston_move_grab *move)
@@ -102,7 +102,7 @@ index a1238f0..38ddb4a 100644
  	if (surface->committed) {
  		wl_resource_post_error(surface_resource,
 diff --git a/frontend/main.c b/frontend/main.c
-index 3b6481d..3220629 100644
+index 3b6481d1e..3220629e4 100644
 --- a/frontend/main.c
 +++ b/frontend/main.c
 @@ -4447,6 +4447,7 @@ wet_main(int argc, char *argv[], const struct weston_testsuite_data *test_data)
@@ -131,7 +131,7 @@ index 3b6481d..3220629 100644
  		weston_log_ctx_add_log_scope(log_ctx, "proto",
  					     "Wayland protocol dump for all clients.\n",
 diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
-index 731eb57..77b44ba 100644
+index 731eb57c9..77b44baa2 100644
 --- a/include/libweston/libweston.h
 +++ b/include/libweston/libweston.h
 @@ -1473,6 +1473,12 @@ struct weston_dmabuf_feedback;
@@ -167,7 +167,7 @@ index 731eb57..77b44ba 100644
  }
  #endif
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index cf56e4d..668c545 100644
+index cf56e4dd1..419d834a1 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
 @@ -521,10 +521,6 @@ weston_mode_switch_finish(struct weston_output *output,
@@ -205,7 +205,7 @@ index cf56e4d..668c545 100644
  
  		wl_signal_emit(&output->compositor->output_resized_signal, output);
  	}
-@@ -7283,32 +7277,29 @@ weston_head_get_destroy_listener(struct weston_head *head,
+@@ -7283,32 +7277,36 @@ weston_head_get_destroy_listener(struct weston_head *head,
  	return wl_signal_get(&head->destroy_signal, notify);
  }
  
@@ -232,7 +232,7 @@ index cf56e4d..668c545 100644
 -			start_resizing = true;
 +		struct weston_coord_global pos;
 +
-+		if (output->destroying)
++		if (output->destroying || output->mirror_of)
  			continue;
 -		}
  
@@ -248,10 +248,17 @@ index cf56e4d..668c545 100644
 +			next_x += output->width;
 +		else if (compositor->output_flow == WESTON_OUTPUT_FLOW_VERTICAL)
 +			next_y += output->height;
++	}
++
++	wl_list_for_each(output, &compositor->output_list, link) {
++		if (!output->mirror_of)
++			continue;
++
++		weston_output_set_position(output, output->mirror_of->pos);
  	}
  }
  
-@@ -7707,7 +7698,7 @@ weston_compositor_remove_output(struct weston_output *output)
+@@ -7707,7 +7705,7 @@ weston_compositor_remove_output(struct weston_output *output)
  
  	weston_presentation_feedback_discard_list(&output->feedback_list);
  
@@ -260,7 +267,7 @@ index cf56e4d..668c545 100644
  
  	wl_list_remove(&output->link);
  	wl_list_insert(compositor->pending_output_list.prev, &output->link);
-@@ -7786,6 +7777,8 @@ weston_output_set_transform(struct weston_output *output,
+@@ -7786,6 +7784,8 @@ weston_output_set_transform(struct weston_output *output,
  
  	weston_output_update_matrix(output);
  
@@ -269,7 +276,7 @@ index cf56e4d..668c545 100644
  	/* Notify clients of the change for output transform. */
  	wl_list_for_each(head, &output->head_list, output_link) {
  		wl_resource_for_each(resource, &head->resource_list) {
-@@ -8330,6 +8323,8 @@ weston_output_enable(struct weston_output *output)
+@@ -8330,6 +8330,8 @@ weston_output_enable(struct weston_output *output)
  		   output->name, head_names);
  	free(head_names);
  

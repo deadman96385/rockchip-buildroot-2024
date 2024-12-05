@@ -1,7 +1,7 @@
-From 020b9d2c909010a1c32d382f297af35f45b77d88 Mon Sep 17 00:00:00 2001
+From aac82bb254a76796faae17f6668de29a6d3379d1 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Thu, 19 Nov 2020 09:41:47 +0800
-Subject: [PATCH 23/95] backend-drm: Support mirror mode
+Subject: [PATCH 23/98] backend-drm: Support mirror mode
 
 Set env "WESTON_DRM_MIRROR" to enable mirror mode, and set env
 "WESTON_DRM_KEEP_RATIO" to keep the aspect ratio.
@@ -22,7 +22,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  11 files changed, 411 insertions(+), 24 deletions(-)
 
 diff --git a/clients/desktop-shell.c b/clients/desktop-shell.c
-index f500979..aea02d4 100644
+index f50097976..aea02d44f 100644
 --- a/clients/desktop-shell.c
 +++ b/clients/desktop-shell.c
 @@ -1079,9 +1079,14 @@ desktop_shell_configure(void *data,
@@ -43,7 +43,7 @@ index f500979..aea02d4 100644
  }
  
 diff --git a/desktop-shell/shell.c b/desktop-shell/shell.c
-index 333218d..127cf19 100644
+index 333218dd0..127cf1906 100644
 --- a/desktop-shell/shell.c
 +++ b/desktop-shell/shell.c
 @@ -268,7 +268,7 @@ set_shsurf_size_maximized_or_fullscreen(struct shell_surface *shsurf,
@@ -75,7 +75,7 @@ index 333218d..127cf19 100644
  
  	if (!visible) {
 diff --git a/include/libweston/libweston.h b/include/libweston/libweston.h
-index be3cbda..b98ee50 100644
+index be3cbdaaa..b98ee5022 100644
 --- a/include/libweston/libweston.h
 +++ b/include/libweston/libweston.h
 @@ -716,7 +716,11 @@ struct weston_output {
@@ -91,7 +91,7 @@ index be3cbda..b98ee50 100644
  enum weston_pointer_motion_mask {
  	WESTON_POINTER_MOTION_ABS = 1 << 0,
 diff --git a/libweston/backend-drm/drm-gbm.c b/libweston/backend-drm/drm-gbm.c
-index 77f8d6b..98e0cae 100644
+index 77f8d6b48..98e0cae2c 100644
 --- a/libweston/backend-drm/drm-gbm.c
 +++ b/libweston/backend-drm/drm-gbm.c
 @@ -282,8 +282,8 @@ drm_output_fini_egl(struct drm_output *output)
@@ -106,7 +106,7 @@ index 77f8d6b..98e0cae 100644
  	}
  
 diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
-index 24845d2..0d537db 100644
+index 24845d236..0d537db76 100644
 --- a/libweston/backend-drm/drm-internal.h
 +++ b/libweston/backend-drm/drm-internal.h
 @@ -283,6 +283,8 @@ struct drm_backend {
@@ -141,7 +141,7 @@ index 24845d2..0d537db 100644
  
  void
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 20b5be8..f1a5a5e 100644
+index 20b5be80a..f1a5a5e15 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -70,6 +70,11 @@
@@ -573,7 +573,7 @@ index 20b5be8..f1a5a5e 100644
  	if (device == NULL)
  		goto err_backend;
 diff --git a/libweston/backend-drm/meson.build b/libweston/backend-drm/meson.build
-index 002669e..e139441 100644
+index 002669e61..e13944160 100644
 --- a/libweston/backend-drm/meson.build
 +++ b/libweston/backend-drm/meson.build
 @@ -57,7 +57,8 @@ deps_drm = [
@@ -587,7 +587,7 @@ index 002669e..e139441 100644
  
  if get_option('renderer-gl')
 diff --git a/libweston/backend-drm/state-propose.c b/libweston/backend-drm/state-propose.c
-index 1e62e2b..7e8b574 100644
+index 1e62e2b46..7e8b57425 100644
 --- a/libweston/backend-drm/state-propose.c
 +++ b/libweston/backend-drm/state-propose.c
 @@ -55,6 +55,21 @@ static const char *const drm_output_propose_state_mode_as_string[] = {
@@ -635,7 +635,7 @@ index 1e62e2b..7e8b574 100644
  		state = drm_output_propose_state(output_base, pending_state, mode);
  		if (!state) {
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index d11c197..8259a88 100644
+index 8bf6677b4..e7e8f12a1 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
 @@ -1657,7 +1657,7 @@ weston_view_assign_output(struct weston_view *ev)
@@ -685,15 +685,15 @@ index d11c197..8259a88 100644
  	wl_list_for_each(output, &compositor->output_list, link) {
  		struct weston_coord_global pos;
  
--		if (output->destroying)
+-		if (output->destroying || output->mirror_of)
 +		wl_list_for_each(head, &output->head_list, output_link)
 +			weston_head_update_global(head);
 +
-+		if (!weston_output_valid(output))
++		if (!weston_output_valid(output) || output->mirror_of)
  			continue;
  
  		pos.c = weston_coord(next_x, next_y);
-@@ -7546,11 +7562,11 @@ weston_compositor_add_output(struct weston_compositor *compositor,
+@@ -7553,11 +7569,11 @@ weston_compositor_add_output(struct weston_compositor *compositor,
  	wl_list_insert(compositor->output_list.prev, &output->link);
  	output->enabled = true;
  
@@ -708,7 +708,7 @@ index d11c197..8259a88 100644
  	 * Use view_list, as paint nodes have not been created for this
  	 * output yet. Any existing view might touch this new output.
 diff --git a/libweston/input.c b/libweston/input.c
-index d1f2aef..0f7f09a 100644
+index d1f2aef4e..0f7f09a88 100644
 --- a/libweston/input.c
 +++ b/libweston/input.c
 @@ -2152,20 +2152,28 @@ WL_EXPORT struct weston_coord_global
@@ -752,7 +752,7 @@ index d1f2aef..0f7f09a 100644
  			return;
  
 diff --git a/meson.build b/meson.build
-index 1858476..028c828 100644
+index 185847674..028c8287a 100644
 --- a/meson.build
 +++ b/meson.build
 @@ -144,6 +144,11 @@ if dep_xkbcommon.version().version_compare('>= 0.5.0')
