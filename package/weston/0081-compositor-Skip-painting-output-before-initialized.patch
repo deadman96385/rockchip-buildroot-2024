@@ -1,15 +1,15 @@
-From 134dd0ad30dc2def80f8d0c92e3228c78d531ea3 Mon Sep 17 00:00:00 2001
+From a929100b9854ff721d7a5d9f6cb6d5259994b9da Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Tue, 16 Jan 2024 16:44:14 +0800
 Subject: [PATCH 81/98] compositor: Skip painting output before initialized
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
- libweston/compositor.c | 11 +++++++++++
- 1 file changed, 11 insertions(+)
+ libweston/compositor.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index f0585fd85..d3a0f5c14 100644
+index 60ca971a0..3d3bb0797 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
 @@ -3860,6 +3860,7 @@ weston_output_repaint(struct weston_output *output, struct timespec *now)
@@ -20,7 +20,7 @@ index f0585fd85..d3a0f5c14 100644
  
  	TL_POINT(ec, "core_repaint_begin", TLP_OUTPUT(output), TLP_END);
  
-@@ -3880,6 +3881,16 @@ weston_output_repaint(struct weston_output *output, struct timespec *now)
+@@ -3880,6 +3881,17 @@ weston_output_repaint(struct weston_output *output, struct timespec *now)
  			 z_order_link) {
  		assert(pnode->view->output_mask & (1u << pnode->output->id));
  		assert(pnode->output == output);
@@ -30,7 +30,8 @@ index f0585fd85..d3a0f5c14 100644
 +	}
 +
 +	/* Waiting for initializing */
-+	if (!timespec_to_msec(&output->frame_time) && is_blank) {
++	if (weston_output_valid(output) &&
++	    !timespec_to_msec(&output->frame_time) && is_blank) {
 +		timespec_add_nsec(&output->next_repaint, &output->next_repaint,
 +				  millihz_to_nsec(output->current_mode->refresh));
 +		return 1;
