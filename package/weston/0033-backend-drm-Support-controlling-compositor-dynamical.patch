@@ -1,7 +1,7 @@
-From bdfe1a667783a90032eb55f4a622782a01853a83 Mon Sep 17 00:00:00 2001
+From afa0c6a835daea274ee074371a1a81f617f734da Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 3 Jul 2020 12:37:37 +0800
-Subject: [PATCH 33/97] backend-drm: Support controlling compositor dynamically
+Subject: [PATCH 33/98] backend-drm: Support controlling compositor dynamically
 
 Use config file to control compositor's state.
 
@@ -26,13 +26,13 @@ echo "compositor:output:unpin" > /tmp/.weston_drm.conf
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
- libweston/backend-drm/drm.c | 91 ++++++++++++++++++++++++++++++-------
+ libweston/backend-drm/drm.c | 92 ++++++++++++++++++++++++++++++-------
  libweston/compositor.c      |  7 ++-
  libweston/libinput-seat.c   |  4 ++
- 3 files changed, 84 insertions(+), 18 deletions(-)
+ 3 files changed, 85 insertions(+), 18 deletions(-)
 
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index e75524051..d1f341f2b 100644
+index e75524051..1def08f0e 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -213,32 +213,28 @@ close_src:
@@ -80,7 +80,7 @@ index e75524051..d1f341f2b 100644
  	}
  
  	if (!primary)
-@@ -4705,6 +4701,63 @@ config_handle_output(struct drm_backend *b, const char *name,
+@@ -4705,6 +4701,64 @@ config_handle_output(struct drm_backend *b, const char *name,
  	}
  }
  
@@ -127,6 +127,7 @@ index e75524051..d1f341f2b 100644
 +		else if (!strcmp(value, "show"))
 +			b->compositor->hide_cursor = false;
 +
++		b->compositor->view_list_needs_rebuild = true;
 +		weston_compositor_damage_all(b->compositor);
 +	} else if (!strcmp(key, "mirror")) {
 +		b->mirror_mode = !strcmp(value, "on");
@@ -144,7 +145,7 @@ index e75524051..d1f341f2b 100644
  static int
  config_timer_handler(void *data)
  {
-@@ -4746,7 +4799,9 @@ config_timer_handler(void *data)
+@@ -4746,7 +4800,9 @@ config_timer_handler(void *data)
  
  	/**
  	 * Parse configs, formated with <type>:<key>:<value>
@@ -155,7 +156,7 @@ index e75524051..d1f341f2b 100644
  	 */
  	while (3 == fscanf(conf_fp,
  			   "%" STR(MAX_CONF_LEN) "[^:]:"
-@@ -4754,6 +4809,8 @@ config_timer_handler(void *data)
+@@ -4754,6 +4810,8 @@ config_timer_handler(void *data)
  			   "%" STR(MAX_CONF_LEN) "[^\n]%*c", type, key, value)) {
  		if (!strcmp(type, "output"))
  			config_handle_output(b, key, value);
@@ -165,7 +166,7 @@ index e75524051..d1f341f2b 100644
  
  	fclose(conf_fp);
 diff --git a/libweston/compositor.c b/libweston/compositor.c
-index af1915738..cf4e2b7a1 100644
+index d4c4f4ed8..6313f180c 100644
 --- a/libweston/compositor.c
 +++ b/libweston/compositor.c
 @@ -6206,6 +6206,10 @@ weston_compositor_wake(struct weston_compositor *compositor)
