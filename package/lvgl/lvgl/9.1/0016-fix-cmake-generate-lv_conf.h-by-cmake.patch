@@ -1,4 +1,4 @@
-From e9f3976c566c6ca92f39d46c14f3b4dbc149b459 Mon Sep 17 00:00:00 2001
+From 450b0496f3b77dda20d884a7aebbee66f6002de1 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Thu, 5 Dec 2024 15:51:49 +0800
 Subject: [PATCH] fix(cmake): generate lv_conf.h by cmake
@@ -14,17 +14,13 @@ Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
  create mode 100644 lv_conf_default.mk
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index cf7365228..5534a4648 100644
+index cf7365228..6629c461d 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -33,4 +33,14 @@ if (MSVC)
-     INTERFACE LV_ATTRIBUTE_EXTERN_DATA=__declspec\(dllimport\)
-     PRIVATE LV_ATTRIBUTE_EXTERN_DATA=__declspec\(dllexport\)
-   )
--endif()
-\ No newline at end of file
-+endif()
-+
+@@ -8,6 +8,16 @@ endif()
+ 
+ set(LVGL_ROOT_DIR ${CMAKE_CURRENT_LIST_DIR})
+ 
 +include(${CMAKE_CURRENT_LIST_DIR}/lv_conf_default.mk)
 +if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/lv_conf.mk)
 +    include(${CMAKE_CURRENT_LIST_DIR}/lv_conf.mk)
@@ -34,6 +30,17 @@ index cf7365228..5534a4648 100644
 +    ${PROJECT_SOURCE_DIR}/lv_conf.h.in
 +    ${PROJECT_SOURCE_DIR}/lv_conf.h
 +)
++
+ if(ESP_PLATFORM)
+   include(${CMAKE_CURRENT_LIST_DIR}/env_support/cmake/esp.cmake)
+ elseif(ZEPHYR_BASE)
+@@ -33,4 +43,4 @@ if (MSVC)
+     INTERFACE LV_ATTRIBUTE_EXTERN_DATA=__declspec\(dllimport\)
+     PRIVATE LV_ATTRIBUTE_EXTERN_DATA=__declspec\(dllexport\)
+   )
+-endif()
+\ No newline at end of file
++endif()
 diff --git a/lv_conf.h.in b/lv_conf.h.in
 new file mode 100644
 index 000000000..c126cb73b
