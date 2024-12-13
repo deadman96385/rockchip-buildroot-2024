@@ -1,19 +1,19 @@
-From c7867932b6a6531143580f9eb8cb7d3d58bc52af Mon Sep 17 00:00:00 2001
+From 8407757c43f1931e37463fa6139dc91fdfa0c40a Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Wed, 23 Oct 2024 14:56:33 +0800
 Subject: [PATCH] feat(drm): update drm display
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
- src/drivers/display/drm/lv_linux_drm.c | 1498 ++++++++++++++----------
+ src/drivers/display/drm/lv_linux_drm.c | 1499 ++++++++++++++----------
  src/drivers/display/drm/lv_linux_drm.h |   23 +-
- 2 files changed, 892 insertions(+), 629 deletions(-)
+ 2 files changed, 893 insertions(+), 629 deletions(-)
 
 diff --git a/src/drivers/display/drm/lv_linux_drm.c b/src/drivers/display/drm/lv_linux_drm.c
-index faa2212..3f8c598 100644
+index faa2212bf..d14077be8 100644
 --- a/src/drivers/display/drm/lv_linux_drm.c
 +++ b/src/drivers/display/drm/lv_linux_drm.c
-@@ -7,829 +7,1085 @@
+@@ -7,829 +7,1086 @@
   *      INCLUDES
   *********************/
  #include "lv_linux_drm.h"
@@ -1673,6 +1673,7 @@ index faa2212..3f8c598 100644
 +    lv_display_set_flush_cb(disp, drm_flush);
 +    lv_display_set_buffers(disp, dev->disp_buf, NULL, size,
 +                           LV_DISPLAY_RENDER_MODE_PARTIAL);
++    lv_display_set_color_format(disp, LV_COLOR_FORMAT_NATIVE_WITH_ALPHA);
 +
 +    pthread_mutex_init(&dev->mutex, NULL);
 +    pthread_create(&dev->pid, NULL, drm_thread, dev);
@@ -1721,7 +1722,7 @@ index faa2212..3f8c598 100644
 -#endif /*LV_USE_LINUX_DRM*/
 +#endif
 diff --git a/src/drivers/display/drm/lv_linux_drm.h b/src/drivers/display/drm/lv_linux_drm.h
-index a75d195..916b536 100644
+index a75d19586..916b536a0 100644
 --- a/src/drivers/display/drm/lv_linux_drm.h
 +++ b/src/drivers/display/drm/lv_linux_drm.h
 @@ -1,5 +1,5 @@
