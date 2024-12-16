@@ -1,7 +1,7 @@
-From 65d2c0bb8aea7cb3ecc85456ea76a88728e09d61 Mon Sep 17 00:00:00 2001
+From e83200bef134a0476e9ca3b46b445b3c0e7f7e02 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Wed, 4 Dec 2024 11:09:52 +0800
-Subject: [PATCH 2/2] fix(drm): support software rotation
+Subject: [PATCH] fix(drm): support software rotation
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
@@ -9,7 +9,7 @@ Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
  1 file changed, 99 insertions(+), 7 deletions(-)
 
 diff --git a/src/drivers/display/drm/lv_linux_drm.c b/src/drivers/display/drm/lv_linux_drm.c
-index 144ac812e..6025a9897 100644
+index fc944b992..ea976bcd4 100644
 --- a/src/drivers/display/drm/lv_linux_drm.c
 +++ b/src/drivers/display/drm/lv_linux_drm.c
 @@ -39,16 +39,24 @@
@@ -66,7 +66,7 @@ index 144ac812e..6025a9897 100644
 +    int32_t y, ty;
 +
 +    for(y = area->y1; y <= area->y2; y++) {
-+        tx = dev->lcd_w - y;
++        tx = (dev->lcd_w - 1) - y;
 +        ty = area->x1;
 +        dst = (data_type *)(dev->drm_buff + (ty * dev->lcd_sw + tx) * (LV_COLOR_DEPTH >> 3));
 +        for(x = area->x1; x <= area->x2; x++) {
@@ -86,8 +86,8 @@ index 144ac812e..6025a9897 100644
 +    int32_t y, ty;
 +
 +    for(y = area->y1; y <= area->y2; y++) {
-+        tx = dev->lcd_w - area->x1;
-+        ty = dev->lcd_h - y;
++        tx = (dev->lcd_w - 1) - area->x1;
++        ty = (dev->lcd_h - 1) - y;
 +        dst = (data_type *)(dev->drm_buff + (ty * dev->lcd_sw + tx) * (LV_COLOR_DEPTH >> 3));
 +        for(x = area->x1; x <= area->x2; x++) {
 +            *dst = *src;
@@ -107,7 +107,7 @@ index 144ac812e..6025a9897 100644
 +
 +    for(y = area->y1; y <= area->y2; y++) {
 +        tx = y;
-+        ty = dev->lcd_h - area->x1;
++        ty = (dev->lcd_h - 1) - area->x1;
 +        dst = (data_type *)(dev->drm_buff + (ty * dev->lcd_sw + tx) * (LV_COLOR_DEPTH >> 3));
 +        for(x = area->x1; x <= area->x2; x++) {
 +            *dst = *src;
