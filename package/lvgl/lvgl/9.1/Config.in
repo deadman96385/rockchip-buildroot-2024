@@ -235,6 +235,41 @@ menu "LVGL configuration"
 			help
 				Disabling this allows arm2d to work on its own (for testing only)
 
+		config BR2_LV_USE_DRAW_RK_TRANSFORM
+			bool "Enable RK transform"
+			default n
+			depends on BR2_LV_USE_DRAW_SW
+			help
+				Enable rk transform.
+
+		config BR2_LV_DRAW_RK_TRANSFORM_SCALER_CORES
+			int "RK transform scaler cores"
+			default -1
+			depends on BR2_LV_USE_DRAW_RK_TRANSFORM
+			help
+				RK transform scaler cores.
+
+		choice BR2_LV_DRAW_RK_TRANSFORM_SCALER_METHOD
+			prompt "RK transform scaler method"
+			default BR2_LV_DRAW_RK_TRANSFORM_SCALER_METHOD_NEAREST
+			depends on BR2_LV_USE_DRAW_RK_TRANSFORM
+			help
+				RK transform scaler method.
+
+			config BR2_LV_DRAW_RK_TRANSFORM_SCALER_METHOD_NEAREST
+				bool "nearest"
+			config BR2_LV_DRAW_RK_TRANSFORM_SCALER_METHOD_BILINEAR
+				bool "bilinear"
+		endchoice
+
+		config BR2_LV_DRAW_RK_TRANSFORM_SCALER_METHOD
+			int
+			default 0 if BR2_LV_DRAW_RK_TRANSFORM_SCALER_METHOD_NEAREST
+			default 1 if BR2_LV_DRAW_RK_TRANSFORM_SCALER_METHOD_BILINEAR
+			depends on BR2_LV_USE_DRAW_RK_TRANSFORM
+			help
+				RK transform scaler method.
+
 		config BR2_LV_DRAW_SW_COMPLEX
 			bool "Enable complex draw engine"
 			default y
