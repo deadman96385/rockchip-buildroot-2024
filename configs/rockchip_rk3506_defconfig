@@ -4,10 +4,8 @@
 #include "wifibt/bt.config"
 #include "wifibt/wireless.config"
 #include "multimedia/audio.config"
-#include "wifibt/bt.config"
-#include "wifibt/wireless.config"
-#include "lvgl/lvgl_rkadk.config"
-#include "lvgl/rk_demo.config"
+#include "gui/lvgl/lvgl_rkadk.config"
+#include "gui/lvgl/rk_demo.config"
 # BR2_PACKAGE_CHRONY is reset to default
 # BR2_PACKAGE_DNSMASQ is reset to default
 # BR2_PACKAGE_DROPBEAR is reset to default

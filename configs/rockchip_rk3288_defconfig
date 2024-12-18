@@ -19,4 +19,4 @@
 #include "tools/test.config"
 #include "network/chromium.config"
 #include "powermanager.config"
-#include "weston.config"
+#include "gui/weston.config"

@@ -11,5 +11,5 @@
 #include "multimedia/mpp.config"
 #include "wifibt/bt.config"
 #include "wifibt/wireless.config"
-#include "weston.config"
+#include "gui/weston.config"
 # BR2_PACKAGE_ROCKCHIP_RGA is not set

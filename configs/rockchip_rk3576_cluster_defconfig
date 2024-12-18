@@ -8,7 +8,7 @@
 #include "fs/vfat.config"
 #include "base/base.config"
 #include "gpu/gpu.config"
-#include "weston.config"
+#include "gui/weston.config"
 #include "network/network.config"
 #include "tools/benchmark.config"
 #include "tools/common.config"

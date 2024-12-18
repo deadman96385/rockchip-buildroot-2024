@@ -21,4 +21,4 @@
 #include "network/chromium.config"
 #include "npu2.config"
 #include "powermanager.config"
-#include "weston.config"
+#include "gui/weston.config"

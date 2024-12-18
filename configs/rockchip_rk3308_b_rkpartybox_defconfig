@@ -4,7 +4,7 @@
 #include "multimedia/audio.config"
 #include "wifibt/bt.config"
 #include "wifibt/wireless.config"
-#include "lvgl.config"
+#include "gui/lvgl.config"
 BR2_PACKAGE_BLUEZ_ALSA=y
 BR2_PACKAGE_COREUTILS=y
 BR2_PACKAGE_EVTEST=y

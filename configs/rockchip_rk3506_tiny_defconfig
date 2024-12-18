@@ -4,8 +4,6 @@
 #include "wifibt/bt.config"
 #include "wifibt/wireless.config"
 #include "multimedia/audio.config"
-#include "wifibt/bt.config"
-#include "wifibt/wireless.config"
 BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_6_1=y
 BR2_PACKAGE_MHZ=y
 BR2_PACKAGE_MTD=y

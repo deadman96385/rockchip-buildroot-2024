@@ -1,7 +1,7 @@
 #include "base/base.config"
 #include "chips/rk3308_arm.config"
 #include "fs/vfat.config"
-#include "lvgl.config"
+#include "gui/lvgl.config"
 #include "multimedia/audio.config"
 #include "wifibt/bt.config"
 #include "wifibt/wireless.config"
