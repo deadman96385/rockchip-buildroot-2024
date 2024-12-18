@@ -54,13 +54,17 @@ NEW_DEFCONFIG="$OUTPUT_DIR/.new_defconfig"
 FRAGMENT="$OUTPUT_DIR/.fragment"
 
 CONFIG_DIR="$OUTPUT_DIR/build/buildroot-config"
-HOST_GCC_VERSION="$(gcc --version | head -n 1 | xargs -n 1 | \
-	tail -n 1 | cut -d'.' -f1)"
-CUSTOM_KERNEL_VERSION="$(head -n 2 "$BUILDROOT_DIR/../kernel/Makefile" | \
-	cut -d' ' -f3 | paste -sd'.')"
+CUSTOM_KERNEL_VERSION="$(grep -o " = [0-9]*$" -m 2 \
+	"$BUILDROOT_DIR/../kernel/Makefile" | tr -d '= ' | paste -sd'.')"
 HOSTARCH="$(uname -m)"
 BR2_VERSION_FULL="$(grep "export BR2_VERSION := " \
 	"$BUILDROOT_DIR/Makefile" | xargs -n 1 | tail -n 1)"
+
+HOST_GCC_VERSION="$(gcc --version | head -n 1 | \
+	sed "s/^.*) \([^\.]*\).*/\1/")"
+if [ "$HOST_GCC_VERSION" -gt 11 ]; then
+	HOST_GCC_VERSION=11
+fi
 
 # Generate original defconfig
 if [ ! -r "$CONFIG" ]; then
