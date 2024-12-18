@@ -10,10 +10,10 @@ menuconfig BR2_PACKAGE_FLUTTER_EMBEDDED_LINUX
 	depends on !BR2_STATIC_LIBS # flutter-engine, wayland
 	depends on BR2_USE_WCHAR # flutter-engine
 	depends on BR2_PACKAGE_HAS_LIBGLES # flutter-engine
-	depends on BR2_PACKAGE_WAYLAND
 	select BR2_PACKAGE_HOST_FLUTTER_SDK_BIN
 	select BR2_PACKAGE_FLUTTER_ENGINE
 	select BR2_PACKAGE_LIBXKBCOMMON
+	select BR2_PACKAGE_LIBDRM
 	help
 	  Embedded Linux embedding for Flutter.
 
@@ -21,7 +21,25 @@ menuconfig BR2_PACKAGE_FLUTTER_EMBEDDED_LINUX
 
 if BR2_PACKAGE_FLUTTER_EMBEDDED_LINUX
 
-config BR2_PACKAGE_FLUTTER_EMBEDDED_LINUX_SO
-	bool "build elinux .so"
+choice
+	prompt "backend"
+
+config BR2_PACKAGE_FLUTTER_EMBEDDED_LINUX_WAYLAND
+	bool "wayland"
+	depends on BR2_PACKAGE_WAYLAND
+
+config BR2_PACKAGE_FLUTTER_EMBEDDED_LINUX_X11
+	bool "x11"
+	depends on BR2_PACKAGE_XORG7
+
+config BR2_PACKAGE_FLUTTER_EMBEDDED_LINUX_GBM
+	bool "gbm"
+	depends on BR2_PACKAGE_HAS_LIBGBM
+	depends on BR2_PACKAGE_SYSTEMD
+
+endchoice
+
+config BR2_PACKAGE_FLUTTER_EMBEDDED_LINUX_CLIENT
+	bool "client example"
 
 endif
