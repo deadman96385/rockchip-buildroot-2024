@@ -274,7 +274,7 @@ index 000000000..e4cae80cc
 +
 +    memset(&ui_attr, 0, sizeof(ui_attr));
 +
-+    ui_attr.u32VoChn = 1;
++    ui_attr.u32VoChn = 2;
 +    ui_attr.u32VoDev = -1;
 +    ui_attr.u32VoLay = -1;
 +    ui_attr.u32DispFrmRt = 60;
