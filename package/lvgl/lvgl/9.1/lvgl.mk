@@ -25,14 +25,23 @@ LVGL_DEPENDENCIES += freetype
 LVGL_CONF_OPTS += -DLV_USE_FREETYPE=y
 endif
 
-ifeq ($(LV_USE_SDL), y)
+ifeq ($(BR2_LV_USE_SDL), y)
 LVGL_DEPENDENCIES += sdl2
-LVGL_CONF_OPTS += -DLV_USE_SDL=y
 endif
 
-ifeq ($(LV_USE_DRAW_SDL), y)
+ifeq ($(BR2_LV_USE_LINUX_DRM), y)
+LVGL_DEPENDENCIES += libdrm
+ifeq ($(BR2_LV_DRM_USE_RGA), y)
+LVGL_DEPENDENCIES += rockchip-rga
+endif
+endif
+
+ifeq ($(BR2_LV_USE_RKADK), y)
+LVGL_DEPENDENCIES += rkadk
+endif
+
+ifeq ($(BR2_LV_USE_DRAW_SDL), y)
 LVGL_DEPENDENCIES += sdl2 sdl2_image
-LVGL_CONF_OPTS += -DLV_USE_DRAW_SDL=y
 endif
 
 define LVGL_PRE_HOOK
