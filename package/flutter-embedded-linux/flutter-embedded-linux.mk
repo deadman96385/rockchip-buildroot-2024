@@ -4,9 +4,10 @@
 #
 ################################################################################
 
-FLUTTER_EMBEDDED_LINUX_VERSION = e76c956498
-FLUTTER_EMBEDDED_LINUX_SITE = https://github.com/sony/flutter-embedded-linux.git
-FLUTTER_EMBEDDED_LINUX_SITE_METHOD = git
+FLUTTER_EMBEDDED_LINUX_VERSION = cb4b5fff73
+# FLUTTER_EMBEDDED_LINUX_SITE = https://github.com/sony/flutter-embedded-linux.git
+# FLUTTER_EMBEDDED_LINUX_SITE_METHOD = git
+FLUTTER_EMBEDDED_LINUX_SITE = $(call github,sony,flutter-embedded-linux,$(FLUTTER_EMBEDDED_LINUX_VERSION))
 FLUTTER_EMBEDDED_LINUX_LICENSE = BSD-3-Clause
 FLUTTER_EMBEDDED_LINUX_LICENSE_FILES = LICENSE
 FLUTTER_EMBEDDED_LINUX_DEPENDENCIES = \
