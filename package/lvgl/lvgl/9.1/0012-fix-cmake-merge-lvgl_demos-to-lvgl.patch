@@ -1,7 +1,7 @@
-From 0ec8210d94fdadf21e60829b40c1906eb9c89d93 Mon Sep 17 00:00:00 2001
+From 6189ea98653d2c845d9eb85046acb2b7f488b963 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Tue, 3 Dec 2024 18:54:34 +0800
-Subject: [PATCH] fix(cmake): merge lvgl_demos to lvgl
+Subject: [PATCH 12/22] fix(cmake): merge lvgl_demos to lvgl
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---

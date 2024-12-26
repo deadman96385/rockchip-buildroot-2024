@@ -1,7 +1,7 @@
-From 2e20ff193e1914b2dab79488c6b44c0faad278e6 Mon Sep 17 00:00:00 2001
+From a0b9bf1c1fbf85bfe6dfc611cf79d6f5184a01a0 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Sat, 2 Nov 2024 10:32:13 +0800
-Subject: [PATCH 10/12] feat(drivers): rkadk and drm support overlay
+Subject: [PATCH 09/22] feat(drivers): rkadk and drm support overlay
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
@@ -12,7 +12,7 @@ Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
  create mode 100644 src/drivers/display/lv_display_common.h
 
 diff --git a/src/drivers/display/drm/lv_linux_drm.c b/src/drivers/display/drm/lv_linux_drm.c
-index f213e50..c3fcfdf 100644
+index d14077be8..5b6831ed2 100644
 --- a/src/drivers/display/drm/lv_linux_drm.c
 +++ b/src/drivers/display/drm/lv_linux_drm.c
 @@ -31,6 +31,8 @@
@@ -32,7 +32,7 @@ index f213e50..c3fcfdf 100644
  } drm_device_t;
  
  static int bo_map(drm_device_t *dev, drm_bo_t *bo)
-@@ -879,6 +882,81 @@ static void setdrmdisp(drm_device_t* dev, drm_bo_t *bo)
+@@ -880,6 +883,81 @@ static void setdrmdisp(drm_device_t* dev, drm_bo_t *bo)
      }
  }
  
@@ -114,7 +114,7 @@ index f213e50..c3fcfdf 100644
  static void *drm_thread(void *arg)
  {
      drm_device_t * dev = (drm_device_t *)arg;
-@@ -947,6 +1025,7 @@ static void *drm_thread(void *arg)
+@@ -948,6 +1026,7 @@ static void *drm_thread(void *arg)
                      LV_LOG_ERROR("%d, running failed, %s\n", __LINE__,
                                   imStrError((IM_STATUS)ret));
              }
@@ -122,7 +122,7 @@ index f213e50..c3fcfdf 100644
  #else
              for (int i = 0; i < dev->mode.height; i++)
              {
-@@ -1087,4 +1166,74 @@ end:
+@@ -1089,4 +1168,74 @@ end:
      return 0;
  }
  
@@ -199,7 +199,7 @@ index f213e50..c3fcfdf 100644
  #endif
 diff --git a/src/drivers/display/lv_display_common.h b/src/drivers/display/lv_display_common.h
 new file mode 100644
-index 0000000..2aa6e90
+index 000000000..2aa6e9095
 --- /dev/null
 +++ b/src/drivers/display/lv_display_common.h
 @@ -0,0 +1,44 @@
@@ -248,7 +248,7 @@ index 0000000..2aa6e90
 +
 +#endif
 diff --git a/src/drivers/display/rkadk/rkadk.c b/src/drivers/display/rkadk/rkadk.c
-index 11a164a..af4a847 100644
+index 00621126a..66ff74bf2 100644
 --- a/src/drivers/display/rkadk/rkadk.c
 +++ b/src/drivers/display/rkadk/rkadk.c
 @@ -31,6 +31,7 @@
@@ -268,7 +268,7 @@ index 11a164a..af4a847 100644
  } disp_dev_t;
  
  /**********************
-@@ -469,6 +472,38 @@ void rk_disp_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * color_
+@@ -470,6 +473,38 @@ void rk_disp_flush(lv_display_t * disp, const lv_area_t * area, uint8_t * color_
      ret = imcopy(src_img, dst_img);
      if (ret != IM_STATUS_SUCCESS)
          err("%d, running failed, %s\n", __LINE__, imStrError((IM_STATUS)ret));
@@ -307,7 +307,7 @@ index 11a164a..af4a847 100644
  #endif
      rkadk_dev->frame_info.pMblk = blk;
      RK_MPI_SYS_MmzFlushCache(blk, RK_FALSE);
-@@ -555,4 +590,71 @@ void lv_rkadk_disp_delete(lv_display_t * disp)
+@@ -556,4 +591,71 @@ void lv_rkadk_disp_delete(lv_display_t * disp)
      lv_display_delete(disp);
  }
  

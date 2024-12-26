@@ -1,7 +1,7 @@
-From 450b0496f3b77dda20d884a7aebbee66f6002de1 Mon Sep 17 00:00:00 2001
+From 36edd54985fe5c838789a9c3a9ae20065cc1b377 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Thu, 5 Dec 2024 15:51:49 +0800
-Subject: [PATCH] fix(cmake): generate lv_conf.h by cmake
+Subject: [PATCH 15/22] fix(cmake): generate lv_conf.h by cmake
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---

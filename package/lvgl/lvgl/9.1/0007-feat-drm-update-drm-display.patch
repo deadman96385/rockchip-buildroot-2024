@@ -1,7 +1,7 @@
-From 8407757c43f1931e37463fa6139dc91fdfa0c40a Mon Sep 17 00:00:00 2001
+From 6c1adb36c1bc3fc109eb36391271549f0035f290 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Wed, 23 Oct 2024 14:56:33 +0800
-Subject: [PATCH] feat(drm): update drm display
+Subject: [PATCH 07/22] feat(drm): update drm display
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---

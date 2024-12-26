@@ -1,7 +1,7 @@
-From 7e5b4f0a8726b263fc7864fac8618d77ef13e414 Mon Sep 17 00:00:00 2001
+From a439d1ea94507401c6f920c0f87a0bdf1d1c08fc Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Thu, 24 Oct 2024 19:11:54 +0800
-Subject: [PATCH 09/12] feat(drivers): support rkadk
+Subject: [PATCH 08/22] feat(drivers): support rkadk
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
@@ -13,7 +13,7 @@ Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 
 diff --git a/src/drivers/display/rkadk/rkadk.c b/src/drivers/display/rkadk/rkadk.c
 new file mode 100644
-index 000000000..e4cae80cc
+index 000000000..00621126a
 --- /dev/null
 +++ b/src/drivers/display/rkadk/rkadk.c
 @@ -0,0 +1,559 @@

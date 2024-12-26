@@ -1,7 +1,7 @@
-From e7a11cd184513637b9322ae91449849e609224f2 Mon Sep 17 00:00:00 2001
+From bee3755a5f7d648e8ede42b6482beba4daa46a1f Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Tue, 12 Nov 2024 17:27:30 +0800
-Subject: [PATCH 12/12] feat(msgbox): support create textarea
+Subject: [PATCH 11/22] feat(msgbox): support create textarea
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
@@ -10,7 +10,7 @@ Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
  2 files changed, 18 insertions(+)
 
 diff --git a/src/widgets/msgbox/lv_msgbox.c b/src/widgets/msgbox/lv_msgbox.c
-index 6f9d4a7..89789c9 100644
+index 6f9d4a72d..89789c9aa 100644
 --- a/src/widgets/msgbox/lv_msgbox.c
 +++ b/src/widgets/msgbox/lv_msgbox.c
 @@ -12,6 +12,7 @@
@@ -39,7 +39,7 @@ index 6f9d4a7..89789c9 100644
  {
      lv_msgbox_t * mbox = (lv_msgbox_t *)obj;
 diff --git a/src/widgets/msgbox/lv_msgbox.h b/src/widgets/msgbox/lv_msgbox.h
-index b7413ee..760ea04 100644
+index b7413ee7e..760ea04b4 100644
 --- a/src/widgets/msgbox/lv_msgbox.h
 +++ b/src/widgets/msgbox/lv_msgbox.h
 @@ -85,6 +85,13 @@ lv_obj_t * lv_msgbox_add_header_button(lv_obj_t * obj, const void * icon);

@@ -1,7 +1,7 @@
-From e83200bef134a0476e9ca3b46b445b3c0e7f7e02 Mon Sep 17 00:00:00 2001
+From c686ef980444e7e57c3300427cc7941d8704a2e1 Mon Sep 17 00:00:00 2001
 From: Jiajian Wu <jair.wu@rock-chips.com>
 Date: Wed, 4 Dec 2024 11:09:52 +0800
-Subject: [PATCH] fix(drm): support software rotation
+Subject: [PATCH 14/22] fix(drm): support software rotation
 
 Signed-off-by: Jiajian Wu <jair.wu@rock-chips.com>
 ---
