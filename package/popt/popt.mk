@@ -21,5 +21,9 @@ POPT_CONF_OPTS += --with-libiconv-prefix=$(STAGING_DIR)/usr
 POPT_DEPENDENCIES += libiconv
 endif
 
+ifeq ($(BR2_PACKAGE_POPT_STATIC),y)
+POPT_CONF_OPTS += --enable-static
+endif
+
 $(eval $(autotools-package))
 $(eval $(host-autotools-package))
