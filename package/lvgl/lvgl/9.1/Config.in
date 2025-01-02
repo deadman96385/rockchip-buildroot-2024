@@ -57,6 +57,9 @@ menu "LVGL configuration"
 		config BR2_LV_USE_RTTHREAD_MALLOC
 			bool "RTThread functions malloc/realloc/free"
 
+		config BR2_LV_USE_MIMALLOC_MALLOC
+			bool "Mimalloc functions mi_malloc/mi_realloc/mi_free"
+
 		config BR2_LV_USE_CUSTOM_MALLOC
 			bool "Implement the functions externally"
 
@@ -68,6 +71,7 @@ menu "LVGL configuration"
 			default 1 if BR2_LV_USE_CLIB_MALLOC
 			default 2 if BR2_LV_USE_MICROPYTHON_MALLOC
 			default 3 if BR2_LV_USE_RTTHREAD_MALLOC
+			default 4 if BR2_LV_USE_MIMALLOC_MALLOC
 			default 255 if BR2_LV_USE_CUSTOM_MALLOC
 
 		choice
