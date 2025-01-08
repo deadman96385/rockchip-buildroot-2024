@@ -1,23 +1,23 @@
-From 66ee227b7ebacaacbc141f8e26e0c6cfbb9a03c0 Mon Sep 17 00:00:00 2001
+From c7695c7bbf327320716706dc0737c396eef4c68c Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Sat, 7 Oct 2023 17:08:03 +0800
-Subject: [PATCH 8/8] adb: daemon: Fix build issue with musl and uclibc
+Subject: [PATCH 7/7] adb: daemon: Fix build issue with musl and uclibc
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
- adb/adbd_auth.cpp                      | 131 ++++++++++++++++++++++++-
- adb/file_sync_service.cpp              |   2 +
- adb/transport.cpp                      |   2 +
+ adb/daemon/auth.cpp                    | 129 +++++++++++++++++++++++++
+ adb/transport.cpp                      |   6 ++
  base/include/android-base/quick_exit.h |   8 +-
- base/logging.cpp                       |   2 +-
- meson.build                            |   1 -
- 6 files changed, 139 insertions(+), 7 deletions(-)
+ base/logging.cpp                       |   4 +-
+ libcutils/sockets_unix.cpp             |   2 +-
+ meson.build                            |   2 -
+ 6 files changed, 142 insertions(+), 9 deletions(-)
 
-diff --git a/adb/adbd_auth.cpp b/adb/adbd_auth.cpp
-index da64a0c..03bd54b 100644
---- a/adb/adbd_auth.cpp
-+++ b/adb/adbd_auth.cpp
-@@ -46,6 +46,135 @@ static bool needs_retry = false;
+diff --git a/adb/daemon/auth.cpp b/adb/daemon/auth.cpp
+index 1266a48..5a4f404 100644
+--- a/adb/daemon/auth.cpp
++++ b/adb/daemon/auth.cpp
+@@ -51,6 +51,135 @@ static bool needs_retry = false;
  
  bool auth_required = true;
  
@@ -150,47 +150,52 @@ index da64a0c..03bd54b 100644
 +
 +#endif
 +
- bool adbd_auth_verify(const char* token, size_t token_size, const char* sig, int sig_len) {
+ bool adbd_auth_verify(const char* token, size_t token_size, const std::string& sig,
+                       std::string* auth_key) {
      static constexpr const char* key_paths[] = { "/adb_keys", "/data/misc/adb/adb_keys", nullptr };
- 
-@@ -67,7 +196,7 @@ bool adbd_auth_verify(const char* token, size_t token_size, const char* sig, int
-                 // b64_pton requires one additional byte in the target buffer for
-                 // decoding to succeed. See http://b/28035006 for details.
-                 uint8_t keybuf[ANDROID_PUBKEY_ENCODED_SIZE + 1];
--                if (__b64_pton(line.c_str(), keybuf, sizeof(keybuf)) != ANDROID_PUBKEY_ENCODED_SIZE) {
-+                if (b64_pton(line.c_str(), keybuf, sizeof(keybuf)) != ANDROID_PUBKEY_ENCODED_SIZE) {
-                     LOG(ERROR) << "Invalid base64 key " << line.c_str() << " in " << path;
-                     continue;
-                 }
-diff --git a/adb/file_sync_service.cpp b/adb/file_sync_service.cpp
-index f8bd529..bd1a9ce 100644
---- a/adb/file_sync_service.cpp
-+++ b/adb/file_sync_service.cpp
-@@ -21,7 +21,9 @@
- 
- #include <dirent.h>
- #include <errno.h>
-+#ifndef __UCLIBC__
- #include <linux/xattr.h>
-+#endif
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
 diff --git a/adb/transport.cpp b/adb/transport.cpp
-index c644893..ba60895 100644
+index 841865a..3c321d0 100644
 --- a/adb/transport.cpp
 +++ b/adb/transport.cpp
-@@ -779,8 +779,10 @@ const std::string atransport::connection_state_name() const {
-             return "host";
-         case kCsRecovery:
-             return "recovery";
+@@ -42,7 +42,9 @@
+ #include <android-base/strings.h>
+ #include <android-base/thread_annotations.h>
+ 
 +#if ADB_HOST
-         case kCsNoPerm:
-             return UsbNoPermissionsShortHelpText();
+ #include <diagnose_usb.h>
 +#endif
-         case kCsSideload:
-             return "sideload";
-         case kCsUnauthorized:
+ 
+ #include "adb.h"
+ #include "adb_auth.h"
+@@ -849,10 +851,12 @@ atransport* acquire_one_transport(TransportType type, const char* serial, Transp
+ 
+     std::unique_lock<std::recursive_mutex> lock(transport_lock);
+     for (const auto& t : transport_list) {
++#if ADB_HOST
+         if (t->GetConnectionState() == kCsNoPerm) {
+             *error_out = UsbNoPermissionsLongHelpText();
+             continue;
+         }
++#endif
+ 
+         if (transport_id) {
+             if (t->id == transport_id) {
+@@ -999,6 +1003,7 @@ void atransport::SetConnection(std::unique_ptr<Connection> connection) {
+     connection_ = std::shared_ptr<Connection>(std::move(connection));
+ }
+ 
++#if ADB_HOST
+ std::string atransport::connection_state_name() const {
+     ConnectionState state = GetConnectionState();
+     switch (state) {
+@@ -1028,6 +1033,7 @@ std::string atransport::connection_state_name() const {
+             return "unknown";
+     }
+ }
++#endif
+ 
+ void atransport::update_version(int version, size_t payload) {
+     protocol_version = std::min(version, A_VERSION);
 diff --git a/base/include/android-base/quick_exit.h b/base/include/android-base/quick_exit.h
 index a03b14f..55b542d 100644
 --- a/base/include/android-base/quick_exit.h
@@ -213,30 +218,54 @@ index a03b14f..55b542d 100644
  }
  }
 diff --git a/base/logging.cpp b/base/logging.cpp
-index 5a5ab8e..ae2fcb4 100644
+index 967684f..17e56f4 100644
 --- a/base/logging.cpp
 +++ b/base/logging.cpp
-@@ -90,7 +90,7 @@ static thread_id GetThreadId() {
- }
+@@ -64,9 +64,9 @@ namespace android {
+ namespace base {
  
- namespace {
+ // BSD-based systems like Android/macOS have getprogname(). Others need us to provide one.
+-#if defined(__GLIBC__) || defined(_WIN32)
++#if defined(__GNUC__) || defined(_WIN32)
+ static const char* getprogname() {
 -#if defined(__GLIBC__)
 +#if defined(__GNUC__)
- const char* getprogname() {
    return program_invocation_short_name;
- }
+ #elif defined(_WIN32)
+   static bool first = true;
+diff --git a/libcutils/sockets_unix.cpp b/libcutils/sockets_unix.cpp
+index 6acdcd8..3922ca3 100644
+--- a/libcutils/sockets_unix.cpp
++++ b/libcutils/sockets_unix.cpp
+@@ -22,7 +22,7 @@
+ #include <sys/socket.h>
+ #include <sys/uio.h>
+ #include <sys/un.h>
+-#include <time.h>
++#include <sys/time.h>
+ #include <unistd.h>
+ 
+ #include "android_get_control_env.h"
 diff --git a/meson.build b/meson.build
-index 28c8b94..ab687d8 100644
+index 03c8341..38cc102 100644
 --- a/meson.build
 +++ b/meson.build
-@@ -26,7 +26,6 @@ adbd_srcs = [
-   'adb/adb_trace.cpp',
-   'adb/adb_listeners.cpp',
-   'adb/adbd_auth.cpp',
--  'adb/diagnose_usb.cpp',
-   'adb/fdevent.cpp',
-   'adb/transport.cpp',
-   'adb/transport_usb.cpp',
+@@ -57,7 +57,6 @@ adbd_srcs += [
+   'base/strings.cpp',
+   'base/stringprintf.cpp',
+   'base/parsenetaddress.cpp',
+-  'diagnose_usb/diagnose_usb.cpp',
+   'libasyncio/AsyncIO.cpp',
+   'libcutils/sockets.cpp',
+   'libcutils/sockets_unix.cpp',
+@@ -73,7 +72,6 @@ adbd_inc = [
+   'adb',
+   'adb/daemon/include',
+   'base/include',
+-  'diagnose_usb/include',
+   'libutils/include',
+   'libcutils/include',
+   'libasyncio/include',
 -- 
 2.20.1
 

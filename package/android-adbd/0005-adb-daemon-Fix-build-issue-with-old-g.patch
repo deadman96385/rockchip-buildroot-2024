@@ -1,7 +1,7 @@
-From 50d7798f46bf9911263080b8fa731c6b56b38747 Mon Sep 17 00:00:00 2001
+From 7174da2c4aec5a9ced62fd3687fcbed6b655cbb1 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 8 Nov 2023 17:46:30 +0800
-Subject: [PATCH 6/8] adb: daemon: Fix build issue with old g++
+Subject: [PATCH 5/7] adb: daemon: Fix build issue with old g++
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
@@ -11,14 +11,14 @@ error: too many initializers for ‘usb_os_desc_header’
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
- adb/daemon/usb.cpp | 3 ++-
+ adb/daemon/usb_ffs.cpp | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/adb/daemon/usb.cpp b/adb/daemon/usb.cpp
-index 0f92282..97c3714 100644
---- a/adb/daemon/usb.cpp
-+++ b/adb/daemon/usb.cpp
-@@ -210,7 +210,8 @@ static struct usb_os_desc_header os_desc_header = {
+diff --git a/adb/daemon/usb_ffs.cpp b/adb/daemon/usb_ffs.cpp
+index 07b4ba8..86476b7 100644
+--- a/adb/daemon/usb_ffs.cpp
++++ b/adb/daemon/usb_ffs.cpp
+@@ -183,7 +183,8 @@ static struct usb_os_desc_header os_desc_header = {
      .bcdVersion = cpu_to_le32(1),
      .wIndex = cpu_to_le32(4),
      .bCount = cpu_to_le32(1),
