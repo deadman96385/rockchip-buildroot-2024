@@ -1,4 +1,7 @@
 #include "rockchip_rk3576_ipc_defconfig"
 #include "fs/ubifs.config"
+#include "gui/lvgl/v8/base.config"
+BR2_PACKAGE_LV_DRIVERS=y
 BR2_PACKAGE_RKIPC_RK3576_DV=y
+BR2_PACKAGE_LIBPNG=y
 # BR2_TARGET_ROOTFS_EXT2 is reset to default
