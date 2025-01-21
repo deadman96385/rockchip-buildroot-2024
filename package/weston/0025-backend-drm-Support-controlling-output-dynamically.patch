@@ -1,4 +1,4 @@
-From f084d82e5948daa331ff741072ce81d24018feea Mon Sep 17 00:00:00 2001
+From 339905c51a1457113aee9a127ced5db9e778454f Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 3 Jul 2020 12:37:37 +0800
 Subject: [PATCH 25/98] backend-drm: Support controlling output dynamically
@@ -1184,10 +1184,10 @@ index 15401eb51..dedfb440f 100644
  	pixman_region32_fini(&output_region);
  
 diff --git a/libweston/renderer-gl/gl-renderer.c b/libweston/renderer-gl/gl-renderer.c
-index b688e8f0d..a27aa843a 100644
+index 072bac6b6..22a6e88c1 100644
 --- a/libweston/renderer-gl/gl-renderer.c
 +++ b/libweston/renderer-gl/gl-renderer.c
-@@ -2307,6 +2307,9 @@ gl_renderer_repaint_output(struct weston_output *output,
+@@ -2313,6 +2313,9 @@ gl_renderer_repaint_output(struct weston_output *output,
  
  	/* Calculate the global GL matrix */
  	go->output_matrix = output->matrix;

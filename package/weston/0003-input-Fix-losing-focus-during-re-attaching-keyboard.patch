@@ -1,7 +1,7 @@
-From f274db7fc3656110b33054f695cc8dc2de8a222f Mon Sep 17 00:00:00 2001
+From d26e50d725693afcb39b36a55e71007c0e6d7865 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Tue, 12 May 2020 15:35:40 +0800
-Subject: [PATCH 04/95] input: Fix losing focus during re-attaching keyboard
+Subject: [PATCH 03/98] input: Fix losing focus during re-attaching keyboard
 
 Launch the weston-terminal and begin typing into it. Afterward, detach
 and then re-attach the last keyboard. The keyboard focus is lost.
@@ -17,7 +17,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  2 files changed, 15 insertions(+), 6 deletions(-)
 
 diff --git a/libweston/input.c b/libweston/input.c
-index 3faa6be..d1f2aef 100644
+index 3faa6be42..d1f2aef4e 100644
 --- a/libweston/input.c
 +++ b/libweston/input.c
 @@ -2801,9 +2801,11 @@ notify_keyboard_focus_out(struct weston_seat *seat)
@@ -56,7 +56,7 @@ index 3faa6be..d1f2aef 100644
  }
  
 diff --git a/libweston/libinput-seat.c b/libweston/libinput-seat.c
-index 5ecb974..b7f09ba 100644
+index 5ecb97413..b7f09bac7 100644
 --- a/libweston/libinput-seat.c
 +++ b/libweston/libinput-seat.c
 @@ -145,6 +145,10 @@ device_added(struct udev_input *input, struct libinput_device *libinput_device)
