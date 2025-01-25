@@ -1,4 +1,4 @@
-From 589859e57a265b70c1c8b5b9180b0e27d69797dd Mon Sep 17 00:00:00 2001
+From 709561e3d7f4908796060ab2c3bd8a88430436df Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Sun, 8 Oct 2023 12:07:33 +0800
 Subject: [PATCH 3/7] adb: daemon: Support custom auth command
@@ -226,7 +226,7 @@ index d92922e..c6b49d2 100644
  #endif
  
 diff --git a/adb/daemon/shell_service.cpp b/adb/daemon/shell_service.cpp
-index e72bf9d..2a017a7 100644
+index a73fe59..c5c426a 100644
 --- a/adb/daemon/shell_service.cpp
 +++ b/adb/daemon/shell_service.cpp
 @@ -147,7 +147,8 @@ bool CreateSocketpair(unique_fd* fd1, unique_fd* fd2) {
@@ -264,7 +264,7 @@ index e72bf9d..2a017a7 100644
  
  Subprocess::~Subprocess() {
      WaitForExit();
-@@ -753,6 +760,9 @@ void Subprocess::WaitForExit() {
+@@ -757,6 +764,9 @@ void Subprocess::WaitForExit() {
          }
      }
  
@@ -274,7 +274,7 @@ index e72bf9d..2a017a7 100644
      // If we have an open protocol FD send an exit packet.
      if (protocol_sfd_ != -1) {
          output_->data()[0] = exit_code;
-@@ -798,7 +808,7 @@ unique_fd ReportError(SubprocessProtocol protocol, const std::string& message) {
+@@ -802,7 +812,7 @@ unique_fd ReportError(SubprocessProtocol protocol, const std::string& message) {
  }
  
  unique_fd StartSubprocess(std::string name, const char* terminal_type, SubprocessType type,
@@ -283,7 +283,7 @@ index e72bf9d..2a017a7 100644
      // If we aren't using the shell protocol we must allocate a PTY to properly close the
      // subprocess. PTYs automatically send SIGHUP to the slave-side process when the master side
      // of the PTY closes, which we rely on. If we use a raw pipe, processes that don't read/write,
-@@ -815,7 +825,7 @@ unique_fd StartSubprocess(std::string name, const char* terminal_type, Subproces
+@@ -819,7 +829,7 @@ unique_fd StartSubprocess(std::string name, const char* terminal_type, Subproces
  
      unique_fd error_fd;
      unique_fd fd = StartSubprocess(std::move(name), terminal_type, type, protocol, make_pty_raw,
@@ -292,7 +292,7 @@ index e72bf9d..2a017a7 100644
      if (fd == -1) {
          return error_fd;
      }
-@@ -824,13 +834,14 @@ unique_fd StartSubprocess(std::string name, const char* terminal_type, Subproces
+@@ -828,13 +838,14 @@ unique_fd StartSubprocess(std::string name, const char* terminal_type, Subproces
  
  unique_fd StartSubprocess(std::string name, const char* terminal_type, SubprocessType type,
                            SubprocessProtocol protocol, bool make_pty_raw,

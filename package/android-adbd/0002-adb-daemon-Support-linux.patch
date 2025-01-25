@@ -1,4 +1,4 @@
-From 43c5d5d73ec2ce1a1070919d692a2478858db23f Mon Sep 17 00:00:00 2001
+From 629cabe1bac0525054b05bfada1c59b81400363d Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Thu, 28 Sep 2023 15:10:54 +0800
 Subject: [PATCH 2/7] adb: daemon: Support linux
@@ -20,14 +20,14 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  adb/daemon/remount_service.cpp   |   6 ++
  adb/daemon/remount_service.h     |   2 -
  adb/daemon/services.cpp          |  21 +++++++
- adb/daemon/shell_service.cpp     |   7 +++
+ adb/daemon/shell_service.cpp     |  11 ++++
  adb/daemon/usb.cpp               |   9 +++
  adb/fdevent.cpp                  |   2 +-
  adb/sockets.cpp                  |   7 +++
  adb/transport_local.cpp          |   8 ++-
  base/properties.cpp              |  73 ++++++++++++++++++----
  meson.build                      | 102 +++++++++++++++++++++++++++++++
- 18 files changed, 283 insertions(+), 38 deletions(-)
+ 18 files changed, 287 insertions(+), 38 deletions(-)
  create mode 100644 meson.build
 
 diff --git a/adb/adb.cpp b/adb/adb.cpp
@@ -486,7 +486,7 @@ index b0cc450..d92922e 100644
  
      return unique_fd{};
 diff --git a/adb/daemon/shell_service.cpp b/adb/daemon/shell_service.cpp
-index 3c8f393..e72bf9d 100644
+index 3c8f393..a73fe59 100644
 --- a/adb/daemon/shell_service.cpp
 +++ b/adb/daemon/shell_service.cpp
 @@ -97,7 +97,10 @@
@@ -514,7 +514,19 @@ index 3c8f393..e72bf9d 100644
  
      // Create a socketpair for the fork() child to report any errors back to the parent. Since we
      // use threads, logging directly from the child might deadlock due to locks held in another
-@@ -399,7 +404,9 @@ bool Subprocess::ExecInProcess(Command command, std::string* _Nonnull error) {
+@@ -261,7 +266,11 @@ bool Subprocess::ForkAndExec(std::string* error) {
+         env["HOSTNAME"] = GetHostName();
+         env["LOGNAME"] = pw->pw_name;
+         env["SHELL"] = pw->pw_shell;
++#ifdef __ANDROID__
+         env["TMPDIR"] = "/data/local/tmp";
++#else
++        env["TMPDIR"] = "/tmp";
++#endif
+         env["USER"] = pw->pw_name;
+     }
+ 
+@@ -399,7 +408,9 @@ bool Subprocess::ExecInProcess(Command command, std::string* _Nonnull error) {
  
      CHECK(type_ == SubprocessType::kRaw);
  

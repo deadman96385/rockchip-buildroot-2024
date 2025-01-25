@@ -1,4 +1,4 @@
-From 13dc123e224feb3eccd04116d7325876bffee384 Mon Sep 17 00:00:00 2001
+From 681784eacf1e192e8417faa2397d124c5c5c719d Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Sun, 8 Oct 2023 18:03:25 +0800
 Subject: [PATCH 4/7] adb: daemon: Support setting adb shell
@@ -13,10 +13,10 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  1 file changed, 6 insertions(+), 3 deletions(-)
 
 diff --git a/adb/daemon/shell_service.cpp b/adb/daemon/shell_service.cpp
-index 2a017a7..72957dd 100644
+index c5c426a..869609f 100644
 --- a/adb/daemon/shell_service.cpp
 +++ b/adb/daemon/shell_service.cpp
-@@ -372,13 +372,16 @@ bool Subprocess::ForkAndExec(std::string* error) {
+@@ -376,13 +376,16 @@ bool Subprocess::ForkAndExec(std::string* error) {
          }
  #endif
  
