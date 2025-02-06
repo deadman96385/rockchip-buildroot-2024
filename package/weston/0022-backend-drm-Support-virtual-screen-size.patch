@@ -1,7 +1,7 @@
-From 26776a329661a51e6edebd3aed8d3762846aa84d Mon Sep 17 00:00:00 2001
+From d8712c0e68e3ee22ae0aab9af12a76bc6178fe9a Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Wed, 24 Jun 2020 11:59:42 +0800
-Subject: [PATCH 22/99] backend-drm: Support virtual screen size
+Subject: [PATCH 22/98] backend-drm: Support virtual screen size
 
 Support setting virtual screen size, for example:
 export WESTON_DRM_VIRTUAL_SIZE=1024x768
@@ -88,7 +88,7 @@ index f848ec37f..e2b2bc18d 100644
   * List of properties attached to a DRM connector
   */
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 062f9d25e..7eac6c32e 100644
+index b933c858a..ae09068e1 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -361,6 +361,11 @@ drm_output_update_complete(struct drm_output *output, uint32_t flags,
@@ -125,7 +125,7 @@ index 062f9d25e..7eac6c32e 100644
  
  	scanout_state->zpos = scanout_plane->zpos_min;
  
-@@ -1219,6 +1226,11 @@ drm_plane_create(struct drm_device *device, const drmModePlane *kplane)
+@@ -1232,6 +1239,11 @@ drm_plane_create(struct drm_device *device, const drmModePlane *kplane)
  				       props,
  				       WDRM_PLANE_TYPE__COUNT);
  
@@ -137,7 +137,7 @@ index 062f9d25e..7eac6c32e 100644
  	zpos_range_values =
  		drm_property_get_range_values(&plane->props[WDRM_PLANE_ZPOS],
  					      props);
-@@ -4266,6 +4278,10 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4279,6 +4291,10 @@ drm_backend_create(struct weston_compositor *compositor,
  
  	b->head_matches = drm_head_matches[head_mode];
  

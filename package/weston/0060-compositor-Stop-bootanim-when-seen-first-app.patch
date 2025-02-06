@@ -1,0 +1,28 @@
+From 952f995466a70d8e55cb97fc09e2b12071dd6928 Mon Sep 17 00:00:00 2001
+From: Jeffy Chen <jeffy.chen@rock-chips.com>
+Date: Wed, 28 Sep 2022 10:44:07 +0800
+Subject: [PATCH 60/98] compositor: Stop bootanim when seen first app
+
+Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
+---
+ libweston/compositor.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/libweston/compositor.c b/libweston/compositor.c
+index 6b8fa6ce4..af5772a31 100644
+--- a/libweston/compositor.c
++++ b/libweston/compositor.c
+@@ -3730,6 +3730,10 @@ weston_compositor_build_view_list(struct weston_compositor *compositor)
+ 						view->surface->flags |=
+ 							SURFACE_STAY_ON_BOTTOM;
+ 				}
++
++#define BOOTANIM "/usr/bin/bootanim"
++				if (!access(BOOTANIM, X_OK))
++					(void)!system(BOOTANIM " stop&");
+ 			}
+ 
+ 			view_list_add(compositor, view);
+-- 
+2.20.1
+
