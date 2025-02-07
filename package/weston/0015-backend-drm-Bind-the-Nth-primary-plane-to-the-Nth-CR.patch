@@ -1,7 +1,8 @@
-From 0898bbe4bc2cc468fc8f6283855520592b021eda Mon Sep 17 00:00:00 2001
+From c989d5da9f8b1aa5d36287de5f7501d8b91c58c5 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 2 Apr 2021 11:23:36 +0800
-Subject: [PATCH 15/99] backend-drm: Bind the Nth primary plane to the Nth CRTC
+Subject: [PATCH 015/100] backend-drm: Bind the Nth primary plane to the Nth
+ CRTC
 
 Some hardwares, e.g. Rockchip RK3588, allows planes to bind with other
 CRTCs, but we wouldn't want to do that for primary plane.
