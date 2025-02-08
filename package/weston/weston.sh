@@ -74,6 +74,10 @@ export WESTON_FREEZE_DISPLAY=/tmp/.freeze_weston
 # Try to pin views to the assigned output
 # export WESTON_OUTPUT_PIN=1
 
+# Default window position
+# <x>,<y>|center|left-top|left-bottom|right-top|right-bottom
+# export WESTON_DEFAULT_POSITION=center
+
 # Set dynamic config file path
 # export WESTON_DRM_CONFIG=/tmp/.weston_drm.conf
 #
