@@ -12,6 +12,5 @@
 #include "wifibt/wireless.config"
 #include "tools/benchmark.config"
 #include "tools/common.config"
-#include "powermanager.config"
 #include "gui/weston.config"
 # BR2_PREFER_ROCKCHIP_RGA is not set
