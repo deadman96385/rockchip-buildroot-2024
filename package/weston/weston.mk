@@ -200,23 +200,23 @@ endif
 
 ifeq ($(BR2_PACKAGE_WESTON_DEFAULT_PIXMAN),y)
 define WESTON_INSTALL_PIXMAN_INI
-        $(INSTALL) -D -m 0644 $(WESTON_PKGDIR)/pixman.ini \
-                $(TARGET_DIR)/etc/xdg/weston/weston.ini.d/01-pixman.ini
+	$(INSTALL) -D -m 0644 $(WESTON_PKGDIR)/pixman.ini \
+		$(TARGET_DIR)/etc/xdg/weston/weston.ini.d/01-pixman.ini
 endef
 
 WESTON_POST_INSTALL_TARGET_HOOKS += WESTON_INSTALL_PIXMAN_INI
 endif
 
 define WESTON_INSTALL_TARGET_ENV
-        $(INSTALL) -D -m 0644 $(WESTON_PKGDIR)/weston.sh \
-                $(TARGET_DIR)/etc/profile.d/weston.sh
+	$(INSTALL) -D -m 0644 $(WESTON_PKGDIR)/weston.sh \
+		$(TARGET_DIR)/etc/profile.d/weston.sh
 endef
 
 WESTON_POST_INSTALL_TARGET_HOOKS += WESTON_INSTALL_TARGET_ENV
 
 define WESTON_INSTALL_TARGET_SCRIPTS
-        $(INSTALL) -D -m 0755 $(WESTON_PKGDIR)/weston-calibration-helper.sh \
-                $(TARGET_DIR)/bin/weston-calibration-helper.sh
+	$(INSTALL) -D -m 0755 $(WESTON_PKGDIR)/weston-calibration-helper.sh \
+		$(TARGET_DIR)/bin/weston-calibration-helper.sh
 endef
 
 WESTON_POST_INSTALL_TARGET_HOOKS += WESTON_INSTALL_TARGET_SCRIPTS
@@ -224,6 +224,11 @@ WESTON_POST_INSTALL_TARGET_HOOKS += WESTON_INSTALL_TARGET_SCRIPTS
 define WESTON_INSTALL_INIT_SYSV
 	$(INSTALL) -D -m 755 $(WESTON_PKGDIR)/S49weston \
 		$(TARGET_DIR)/etc/init.d/S49weston
+endef
+
+define WESTON_INSTALL_INIT_SYSTEMD
+	$(INSTALL) -D -m 644 $(WESTON_PKGDIR)/weston.service \
+		$(TARGET_DIR)/usr/lib/systemd/system/weston.service
 endef
 
 $(eval $(meson-package))
