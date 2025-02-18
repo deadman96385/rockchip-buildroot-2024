@@ -1,7 +1,7 @@
-From a862e6417106b353415d032d2669a0c839ef13ee Mon Sep 17 00:00:00 2001
+From 2d29623ae0b802b75b391db8a49bd2154a21320e Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Mon, 17 Jun 2024 08:53:35 +0800
-Subject: [PATCH 087/100] compositor: Fix error in clone mode
+Subject: [PATCH 087/101] compositor: Fix error in clone mode
 
 Avoid multiple globals to remain a single panel and background.
 
@@ -35,10 +35,10 @@ index 385c538e4..db6a748ba 100644
  			continue;
  
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index f3b6fe997..e6381e9ca 100644
+index 58ec160be..1c5dc6064 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
-@@ -2240,6 +2240,8 @@ drm_output_detach_head(struct weston_output *output_base,
+@@ -2139,6 +2139,8 @@ drm_output_detach_head(struct weston_output *output_base,
  		       struct weston_head *head_base)
  {
  	struct drm_output *output = to_drm_output(output_base);
@@ -47,7 +47,7 @@ index f3b6fe997..e6381e9ca 100644
  	struct drm_head *head = to_drm_head(head_base);
  
  	if (!output_base->enabled)
-@@ -2248,6 +2250,17 @@ drm_output_detach_head(struct weston_output *output_base,
+@@ -2147,6 +2149,17 @@ drm_output_detach_head(struct weston_output *output_base,
  	/* Drop connectors that should no longer be driven on next repaint. */
  	wl_list_remove(&head->disable_head_link);
  	wl_list_insert(&output->disable_head, &head->disable_head_link);

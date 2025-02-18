@@ -1,7 +1,7 @@
-From 172a18ce89dc608140e423db767510f8d235522c Mon Sep 17 00:00:00 2001
+From f8dc1b68cb9d134ea7d66c8f08615f23b7563e98 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Fri, 3 Jul 2020 12:37:37 +0800
-Subject: [PATCH 025/100] backend-drm: Support controlling output dynamically
+Subject: [PATCH 025/101] backend-drm: Support controlling output dynamically
 
 Use config file to set output's rotate/down-scale/size/pos/mode/off/
 freeze/input/display-rectangle and prefer/primary output.
@@ -321,7 +321,7 @@ index b98ee5022..e9e74ba79 100644
 +
  #endif
 diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
-index e7f66ec38..8e9a0d491 100644
+index 4e416bc2d..a1768200a 100644
 --- a/libweston/backend-drm/drm-internal.h
 +++ b/libweston/backend-drm/drm-internal.h
 @@ -119,6 +119,9 @@
@@ -401,10 +401,10 @@ index e7f66ec38..8e9a0d491 100644
  int
  drm_output_set_mode(struct weston_output *base,
  		    enum weston_drm_backend_output_mode mode,
-@@ -963,3 +988,12 @@ drm_output_render_gl(struct drm_output_state *state, pixman_region32_t *damage)
- 	return NULL;
- }
- #endif
+@@ -967,3 +992,12 @@ drm_output_render_gl(struct drm_output_state *state, pixman_region32_t *damage)
+ bool
+ drm_fb_convert(struct drm_fb *src, struct drm_fb *dst, int rotation,
+                int src_width, int src_height);
 +
 +inline static bool
 +drm_head_is_connected(struct drm_head *head)
@@ -415,7 +415,7 @@ index e7f66ec38..8e9a0d491 100644
 +	return head->connector.conn->connection == DRM_MODE_CONNECTED;
 +}
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index 00226db2e..b57571de2 100644
+index 32ed45560..089d0d55a 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
 @@ -40,6 +40,7 @@
@@ -426,7 +426,7 @@ index 00226db2e..b57571de2 100644
  #include <time.h>
  #include <poll.h>
  
-@@ -77,6 +78,8 @@
+@@ -72,6 +73,8 @@
  
  static const char default_seat[] = "seat0";
  
@@ -435,7 +435,7 @@ index 00226db2e..b57571de2 100644
  static inline bool
  drm_head_is_external(struct drm_head *head)
  {
-@@ -721,8 +724,8 @@ got_fb:
+@@ -620,8 +623,8 @@ got_fb:
  		goto out;
  	}
  
@@ -446,7 +446,7 @@ index 00226db2e..b57571de2 100644
  
  	dx = output->plane_bounds.x1;
  	dy = output->plane_bounds.y1;
-@@ -1069,7 +1072,7 @@ drm_output_repaint(struct weston_output *output_base)
+@@ -968,7 +971,7 @@ drm_output_repaint(struct weston_output *output_base)
  
  	assert(!output->state_last);
  
@@ -455,7 +455,7 @@ index 00226db2e..b57571de2 100644
  		int64_t refresh_nsec =
  			millihz_to_nsec(output_base->current_mode->refresh);
  		timespec_add_nsec(&output_base->next_repaint,
-@@ -1085,7 +1088,7 @@ drm_output_repaint(struct weston_output *output_base)
+@@ -984,7 +987,7 @@ drm_output_repaint(struct weston_output *output_base)
  		state = drm_output_state_duplicate(output->state_cur,
  						   pending_state,
  						   DRM_OUTPUT_STATE_CLEAR_PLANES);
@@ -464,7 +464,7 @@ index 00226db2e..b57571de2 100644
  
  	cursor_state = drm_output_state_get_existing_plane(state,
  							   output->cursor_plane);
-@@ -2744,6 +2747,8 @@ drm_output_enable(struct weston_output *base)
+@@ -2643,6 +2646,8 @@ drm_output_enable(struct weston_output *base)
  	output->base.switch_mode = drm_output_switch_mode;
  	output->base.set_gamma = drm_output_set_gamma;
  
@@ -473,7 +473,7 @@ index 00226db2e..b57571de2 100644
  	output->state_invalid = true;
  
  	if (device->atomic_modeset)
-@@ -3691,17 +3696,18 @@ drm_backend_update_connectors(struct drm_device *device,
+@@ -3590,17 +3595,18 @@ drm_backend_update_connectors(struct drm_device *device,
  		wl_list_for_each_safe(base, base_next,
  				      &b->compositor->head_list,
  				      compositor_link) {
@@ -497,7 +497,7 @@ index 00226db2e..b57571de2 100644
  				continue;
  
  			weston_head_set_connection_status(base, true);
-@@ -3909,6 +3915,7 @@ drm_shutdown(struct weston_backend *backend)
+@@ -3808,6 +3814,7 @@ drm_shutdown(struct weston_backend *backend)
  
  	udev_input_destroy(&b->input);
  
@@ -505,7 +505,7 @@ index 00226db2e..b57571de2 100644
  	wl_event_source_remove(b->hotplug_timer);
  	wl_event_source_remove(b->udev_drm_source);
  	wl_event_source_remove(b->drm_source);
-@@ -4460,6 +4467,10 @@ output_create_notify(struct wl_listener *listener, void *data)
+@@ -4359,6 +4366,10 @@ output_create_notify(struct wl_listener *listener, void *data)
  
  	/* NOTE: It might trigger output resized signal too early */
  	drm_backend_update_outputs(b);
@@ -516,7 +516,7 @@ index 00226db2e..b57571de2 100644
  }
  
  static const struct weston_drm_output_api api = {
-@@ -4470,6 +4481,278 @@ static const struct weston_drm_output_api api = {
+@@ -4369,6 +4380,278 @@ static const struct weston_drm_output_api api = {
  	drm_output_set_content_type,
  };
  
@@ -795,7 +795,7 @@ index 00226db2e..b57571de2 100644
  enum drm_head_mode {
  	DRM_HEAD_MODE_DEFAULT,
  	DRM_HEAD_MODE_PRIMARY,
-@@ -4532,6 +4815,7 @@ drm_late_init(struct weston_backend *backend) {
+@@ -4431,6 +4714,7 @@ drm_late_init(struct weston_backend *backend) {
  	struct drm_backend *b = container_of(backend, struct drm_backend, base);
  
  	hotplug_timer_handler(b->drm);
@@ -803,7 +803,7 @@ index 00226db2e..b57571de2 100644
  }
  
  static struct drm_backend *
-@@ -4832,6 +5116,9 @@ drm_backend_create(struct weston_compositor *compositor,
+@@ -4731,6 +5015,9 @@ drm_backend_create(struct weston_compositor *compositor,
  	b->hotplug_timer =
  		wl_event_loop_add_timer(loop, hotplug_timer_handler, b->drm);
  

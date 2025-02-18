@@ -1,7 +1,7 @@
-From 2454897dea0848af0bb18c64373309384fe1ef45 Mon Sep 17 00:00:00 2001
+From 377042a47fc0c6e1e3aa0964d2a9deed93d37dc0 Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Thu, 4 Jan 2024 10:50:02 +0800
-Subject: [PATCH 076/100] backend-drm: Support displaying on custom plane
+Subject: [PATCH 076/101] backend-drm: Support displaying on custom plane
 
 Tested on RK3588 EVB with:
 1/ gst-launch-1.0 videotestsrc ! kmssink force-modesetting=1
@@ -20,7 +20,7 @@ Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
  3 files changed, 102 insertions(+), 9 deletions(-)
 
 diff --git a/libweston/backend-drm/drm-internal.h b/libweston/backend-drm/drm-internal.h
-index be9656cf5..faca090f6 100644
+index bece99bc5..0f25e50db 100644
 --- a/libweston/backend-drm/drm-internal.h
 +++ b/libweston/backend-drm/drm-internal.h
 @@ -610,6 +610,7 @@ struct drm_output {
@@ -32,10 +32,10 @@ index be9656cf5..faca090f6 100644
  	/* The last state submitted to the kernel for this CRTC. */
  	struct drm_output_state *state_cur;
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index b9456e5c2..78a7b4cfa 100644
+index fd2f17507..f7939d9ab 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
-@@ -478,6 +478,9 @@ drm_output_get_disable_state(struct drm_pending_state *pending_state,
+@@ -377,6 +377,9 @@ drm_output_get_disable_state(struct drm_pending_state *pending_state,
  static int
  drm_output_apply_mode(struct drm_output *output);
  
@@ -45,7 +45,7 @@ index b9456e5c2..78a7b4cfa 100644
  /**
   * Mark a drm_output_state (the output's last state) as complete. This handles
   * any post-completion actions such as updating the repaint timer, disabling the
-@@ -495,13 +498,37 @@ drm_output_update_complete(struct drm_output *output, uint32_t flags,
+@@ -394,13 +397,37 @@ drm_output_update_complete(struct drm_output *output, uint32_t flags,
  	if (output->pageflip_timer)
  		wl_event_source_timer_update(output->pageflip_timer, 0);
  
@@ -84,7 +84,7 @@ index b9456e5c2..78a7b4cfa 100644
  		drm_fb_unref(output->fb_dummy);
  		output->fb_dummy = NULL;
  	}
-@@ -545,7 +572,7 @@ drm_output_update_complete(struct drm_output *output, uint32_t flags,
+@@ -444,7 +471,7 @@ drm_output_update_complete(struct drm_output *output, uint32_t flags,
  	ts.tv_sec = sec;
  	ts.tv_nsec = usec * 1000;
  
@@ -93,7 +93,7 @@ index b9456e5c2..78a7b4cfa 100644
  		weston_output_finish_frame(&output->base, &ts, flags);
  	else
  		weston_output_finish_frame(&output->base, NULL,
-@@ -1679,6 +1706,15 @@ retry:
+@@ -1578,6 +1605,15 @@ retry:
  		struct weston_output *base;
  		bool found_elsewhere = false;
  
@@ -109,7 +109,7 @@ index b9456e5c2..78a7b4cfa 100644
  		if (plane->type != type)
  			continue;
  		if (!drm_plane_is_available(plane, output))
-@@ -1802,6 +1838,9 @@ create_sprites(struct drm_device *device, drmModeRes *resources)
+@@ -1701,6 +1737,9 @@ create_sprites(struct drm_device *device, drmModeRes *resources)
  			assert(drm_crtc);
  			drm_crtc->primary_plane_id = drm_plane->plane_id;
  		} else if (drm_plane->type == WDRM_PLANE_TYPE_OVERLAY) {
@@ -119,7 +119,7 @@ index b9456e5c2..78a7b4cfa 100644
  			weston_compositor_stack_plane(b->compositor,
  						      &drm_plane->base,
  						      NULL);
-@@ -2551,6 +2590,22 @@ drm_output_init_planes(struct drm_output *output)
+@@ -2450,6 +2489,22 @@ drm_output_init_planes(struct drm_output *output)
  {
  	struct drm_backend *b = output->backend;
  	struct drm_device *device = output->device;
@@ -142,7 +142,7 @@ index b9456e5c2..78a7b4cfa 100644
  
  	output->scanout_plane =
  		drm_output_find_special_plane(device, output,
-@@ -2565,6 +2620,13 @@ drm_output_init_planes(struct drm_output *output)
+@@ -2464,6 +2519,13 @@ drm_output_init_planes(struct drm_output *output)
  				      &output->scanout_plane->base,
  				      &output->base.primary_plane);
  
@@ -156,7 +156,7 @@ index b9456e5c2..78a7b4cfa 100644
  	/* Failing to find a cursor plane is not fatal, as we'll fall back
  	 * to software cursor. */
  	output->cursor_plane =
-@@ -2715,6 +2777,14 @@ drm_output_detach_crtc(struct drm_output *output)
+@@ -2614,6 +2676,14 @@ drm_output_detach_crtc(struct drm_output *output)
  	crtc->output = NULL;
  	output->crtc = NULL;
  

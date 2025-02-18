@@ -1,7 +1,7 @@
-From 02f072a994b66acb8ea036430b26f35c712eb90f Mon Sep 17 00:00:00 2001
+From 14b341d3d701c6276a317e0df1e837b9002b9e1a Mon Sep 17 00:00:00 2001
 From: Jeffy Chen <jeffy.chen@rock-chips.com>
 Date: Mon, 3 Oct 2022 21:03:04 +0800
-Subject: [PATCH 059/100] desktop-shell: Fix crash when hotplugging screens
+Subject: [PATCH 059/101] desktop-shell: Fix crash when hotplugging screens
 
 Signed-off-by: Jeffy Chen <jeffy.chen@rock-chips.com>
 ---
@@ -98,10 +98,10 @@ index 576d2c4ff..eda84aa88 100644
  				desktop_shell_destroy_surface(shsurf);
  				removed = true;
 diff --git a/libweston/backend-drm/drm.c b/libweston/backend-drm/drm.c
-index b032184de..c77e94e44 100644
+index 17381ba7a..10d6ae5cb 100644
 --- a/libweston/backend-drm/drm.c
 +++ b/libweston/backend-drm/drm.c
-@@ -2854,10 +2854,17 @@ drm_output_destroy(struct weston_output *base)
+@@ -2753,10 +2753,17 @@ drm_output_destroy(struct weston_output *base)
  {
  	struct drm_output *output = to_drm_output(base);
  	struct drm_device *device = output->device;
