@@ -303,7 +303,7 @@ CONFIG_SHELL := $(SHELL)
 export SHELL CONFIG_SHELL Q KBUILD_VERBOSE
 
 CUSTOM_KERNEL := $(CURDIR)/../kernel
-CUSTOM_KERNEL_VERSION := $(shell if [ -f "$(CUSTOM_KERNEL)/Makefile" ]; then grep -A 1 "^VERSION = " "$(CUSTOM_KERNEL)/Makefile" | cut -d' ' -f 3 | paste -sd'.'; fi)
+CUSTOM_KERNEL_VERSION := $(shell if [ -f "$(CUSTOM_KERNEL)/Makefile" ]; then grep -A 1 "^VERSION = " "$(CUSTOM_KERNEL)/Makefile" | cut -d' ' -f 3 | paste -sd'.'; else echo "6.1"; fi)
 
 ifndef HOSTAR
 HOSTAR := ar
