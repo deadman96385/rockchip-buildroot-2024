@@ -7,13 +7,12 @@
 #include "fs/ntfs.config"
 #include "fs/vfat.config"
 #include "base/base.config"
-#include "gpu/gpu.config"
 #include "gui/weston.config"
 #include "network/network.config"
 #include "tools/benchmark.config"
 #include "tools/common.config"
 #include "tools/test.config"
-#include "network/chromium.config"
+#include "products/mos/graphic.config"
 BR2_GDB_VERSION_12=y
 BR2_PACKAGE_ALSA_PLUGINS=y
 BR2_PACKAGE_ALSA_UCM_CONF=y
